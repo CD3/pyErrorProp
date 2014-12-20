@@ -4,7 +4,6 @@ from pyErrorProp import *
 import math
 import numpy
 import sympy
-import re
 
 sympy.init_printing()
 
@@ -47,8 +46,8 @@ def test_ballistic_pendulum():
 def test_airtrack_examples():
   angle    = Q_( UF_( 2.14 , 0.05 ), units.degree )
   angle.ito(units.radians)
-  distance = Q_( UF_( 1.00 , 0.01 ), units.meter  )
-  time     = Q_( UF_( 2.338, 0.005), units.second )
+  distance = UF_( 1.00 , 0.01 )* units.meter
+  time     = uncertainties.ufloat( 2.338, 0.005)* units.second
 
 
 

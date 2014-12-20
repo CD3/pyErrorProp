@@ -23,23 +23,26 @@ def nominal( x ):
 
   return x
 
-def upper( x ):
+def uncertainty( x ):
   if isinstance(x, uncertainties.Variable) or isinstance( x, uncertainties.AffineScalarFunc):
-    return x.nominal_value + x.std_dev
+    return x.std_dev
 
   if isinstance(x, units.Quantity):
-    return Q_( upper( x.magnitude ), x.units )
+    return Q_( uncertainty( x.magnitude ), x.units )
 
-  return x
+  return 0.0
+
+def upper( x ):
+  return nominal(x) + uncertainty(x)
 
 def lower( x ):
-  if isinstance(x, uncertainties.Variable):
-    return x.nominal_value - x.std_dev
+  return nominal(x) - uncertainty(x)
 
-  if isinstance(x, units.Quantity):
-    return Q_( lower( x.magnitude ), x.units )
+def is_uncertain( x ):
+  if isinstance(x, uncertainties.Variable) or isinstance( x, uncertainties.AffineScalarFunc):
+    return True
 
-  return x
+  return False
 
 
 def make_unc_quant( nom, unc ):
@@ -48,7 +51,7 @@ def make_unc_quant( nom, unc ):
     u     = nom.units
     nom = nom.magnitude
     if isinstance( unc, units.Quantity ):
-      unc = unc.magnitude
+      unc = unc.to(u).magnitude
     else:
       unc = nom*unc
 
