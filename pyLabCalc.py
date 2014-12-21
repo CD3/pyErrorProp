@@ -28,9 +28,11 @@ def compute_unc_quant( data ):
 def rel_unc( q ):
   return (uncertainty( q ) / nominal( q ) )*100
 
-
 def z( actual, measured ):
   return ( numpy.abs( nominal(actual) - nominal(measured) ) ) / numpy.sqrt( uncertainty(actual)**2 + uncertainty(measured)**2 )
 
 def agree( q1, q2 ):
-  return z(q2,q2) < 2.0
+  return z(q1,q2) < 2.0
+
+def percent_error( actual, measured ):
+  return ((nominal(measured)-nominal(actual))/nominal(actual))*100
