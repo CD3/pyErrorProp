@@ -17,21 +17,6 @@ def Close( a, b, tol = 0.01 ):
         b = float(b)
     return (a - b)**2 / (a**2 + b**2) < 4*tol*tol
 
-def test_misc():
-  x = UF_( 10.0, 0.25, 'x' )
-  y = UF_( 20.0, 0.50, 'y' )
-
-  #prop = PositiveIntervalPropagator(lambda x : np.sqrt(x*x) )
-
-  #u,v,a,b,c = sympy.symbols('u v a b c')
-
-  #eq = a*u**2 + b*u + c
-  #sol = sympy.solve(eq, u)
-  #f = sympy.lambdify( (a,b,c), sol[0], "numpy" )
-  #f(4,3,2)
-
-
-
 
 def test_ballistic_pendulum():
 

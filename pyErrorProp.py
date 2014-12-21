@@ -78,18 +78,18 @@ class PositiveIntervalPropagator( ErrorPropagator ):
     self.func = func
 
   def __call__(self, *args, **kargs):
-    return PositiveIntervalPropagator.propagate(self.func,args,kargs)
+    return PositiveIntervalPropagator.propagate(self.func,*args,**kargs)
 
   @staticmethod
-  def propagate(func, args = (), kargs = {}):
+  def propagate(func, *args, **kargs):
 
     nominal_args = []
-    for a in args:
+    for i,a in enumerate(args):
       nominal_args.append( nominal(a) )
 
     nominal_kargs = dict()
-    for k in kargs:
-      nominal_kargs[k] = nominal( kargs[k] )
+    for k,v in kargs.iteritems():
+      nominal_kargs[k] = nominal( v )
 
     
     nominal_value = func(*nominal_args,**nominal_kargs)
