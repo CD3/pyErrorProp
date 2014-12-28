@@ -36,3 +36,6 @@ def agree( q1, q2 ):
 
 def percent_error( actual, measured ):
   return ((nominal(measured)-nominal(actual))/nominal(actual))*100
+
+def sort_uncertainties( unc ):
+  return sorted( unc, key = numpy.abs )
