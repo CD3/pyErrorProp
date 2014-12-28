@@ -80,23 +80,6 @@ class ErrorPropagator:
     self.return_uncertainties = v
 
   @staticmethod
-  def sort_uncertainties(u):
-    if isinstance( u, dict ) or isinstance( u, collections.OrderedDict ):
-      return collections.OrderedDict( sorted( u.items() , reverse = True, key = lambda it : numpy.abs( it[1] ) ) )
-
-    return u
-
-  @staticmethod
-  def relative_uncertainties( uncertainties ):
-    '''Determine the relative contribution of each uncertainty to the total uncertainty.'''
-    total_unc = ErrorPropagator.total_uncertainty( uncertainties )
-    relative_unc = dict()
-    for k,v in uncertainties.items():
-      relative_unc[k] = (total_unc - ErrorPropagator.total_uncertainty( collections.OrderedDict( filter( lambda it: it[0] != k, uncertainties.items() ) ) )  ) / total_unc
-
-    return relative_unc
-
-  @staticmethod
   def total_uncertainty( uncertainties ):
     '''Compute and return the total uncertainty from individual uncertainty contributions.'''
     if isinstance(uncertainties,dict) or isinstance(uncertainties,collecitons.OrderedDict) :
