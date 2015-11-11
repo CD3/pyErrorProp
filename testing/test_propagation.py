@@ -34,16 +34,16 @@ def test_airtrack_examples():
   distance = UF_( 1.00 , 0.01 )* units.meter
   time     = uncertainties.ufloat( 2.338, 0.005)* units.second
 
-
-
   
-  g,th,a,x,t = sympy.symbols('g th a x t')
-  eqs = [ g*sympy.sin(th) - a, x - a*t*t/2 ]
+  @ErrorPropagation
+  def gravity(angle, distance, time):
+    g,th,a,x,t = sympy.symbols('g th a x t')
+    eqs = [ g*sympy.sin(th) - a, x - a*t*t/2 ]
+    sol = sympy.solve(eqs, [g,a])
+    g_ = sympy.lambdify( (th,x,t), sol[g], "numpy" )
+    return g_(angle, distance, time)
 
-  sol = sympy.solve(eqs, [g,a])
+  ans,_ = gravity(angle=angle,distance=distance,time=time)
 
-  gravity = sympy.lambdify( (th,x,t), sol[g], "numpy" )
-
-  ans,_ = PositiveIntervalPropagator.propagate( gravity, (angle,distance,time) )
   assert Close( ans.nominal_value, 9.80 )
   assert Close( ans.std_dev , 0.25 )

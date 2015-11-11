@@ -15,7 +15,14 @@ UF_ = uncertainties.ufloat
 # utils 
 #########
 
+def unitsof( v ):
+  if isinstance( v, units.Quantity ):
+    return v.units
+
+  return units.Quantity('dimensionless').units
+
 def nominal( x ):
+  '''Return the nominal value of a quantity'''
   if isinstance(x, uncertainties.Variable) or isinstance( x, uncertainties.AffineScalarFunc):
     return x.nominal_value
 
@@ -25,6 +32,7 @@ def nominal( x ):
   return x
 
 def uncertainty( x ):
+  '''Returns the uncertainty of a quantity'''
   if isinstance(x, uncertainties.Variable) or isinstance( x, uncertainties.AffineScalarFunc):
     return x.std_dev
 
@@ -34,22 +42,24 @@ def uncertainty( x ):
   return 0.0
 
 def upper( x ):
+  '''Return the upper bound on a quantity (nominal + uncertainty)'''
   return nominal(x) + uncertainty(x)
 
 def lower( x ):
+  '''Return the lower bound on a quantity (nominal - uncertainty)'''
   return nominal(x) - uncertainty(x)
 
 def is_uncertain( x ):
+  '''Test wether a quantity has uncertianty'''
   if isinstance(x, uncertainties.Variable) or isinstance( x, uncertainties.AffineScalarFunc):
     return True
 
   return False
 
-
 def make_unc_quant( nom, unc ):
-  # if nominal value is a quantity, we need to return a quantity
+  '''Create an uncertain quantity. '''
   if isinstance( nom, units.Quantity ):
-    u     = nom.units
+    u   = nom.units
     nom = nom.magnitude
     if isinstance( unc, units.Quantity ):
       unc = unc.to(u).magnitude
@@ -57,16 +67,59 @@ def make_unc_quant( nom, unc ):
       unc = nom*unc
 
     return Q_( UF_(nom, unc), u )
-
     
   return UF_(nom,unc)
+
+
+
+def compute_unc_quant( data ):
+  '''Computes an uncertain quantity from a data set (computes the standard error)'''
+  units = unitsof( data )
+  nominal = numpy.mean( data )
+  std_dev = numpy.std( data )
+  std_err = std_dev / numpy.sqrt( len( data ) )
+
+  return make_unc_quant( nominal, std_err )
+
+def rel_unc( q ):
+  '''Computes the relative uncertainty of an uncertain quantity'''
+  return (uncertainty( q ) / nominal( q ) )*100
+
+def z( actual, measured ):
+  '''Compute the z value for two uncertain quantities'''
+  return ( numpy.abs( nominal(actual) - nominal(measured) ) ) / numpy.sqrt( uncertainty(actual)**2 + uncertainty(measured)**2 )
+
+def agree( q1, q2 ):
+  return z(q1,q2) < 2.0
+
+def percent_error( actual, measured ):
+  return ((nominal(measured)-nominal(actual))/nominal(actual))*100
+
+def sort_uncertainties(u):
+  '''Sorts a list of uncertainties from largest to smallest'''
+  if isinstance( u, dict ) or isinstance( u, collections.OrderedDict ):
+    return collections.OrderedDict( sorted( u.items() , reverse = True, key = lambda it : numpy.abs( it[1] ) ) )
+
+  return u
+
+def relative_uncertainties( uncertainties ):
+  '''Determine the relative contribution of each uncertainty to the total uncertainty.'''
+  total_unc = ErrorPropagator.total_uncertainty( uncertainties )
+  relative_unc = dict()
+  for k,v in uncertainties.items():
+    relative_unc[k] = (total_unc - ErrorPropagator.total_uncertainty( collections.OrderedDict( filter( lambda it: it[0] != k, uncertainties.items() ) ) )  ) / total_unc
+
+  return relative_unc
+
+
+
+
 
 
 
 ####################
 # error propagators
 ####################
-
 
 class ErrorPropagator:
   def __init__(self, func = None):
@@ -95,9 +148,6 @@ class ErrorPropagator:
       return ( make_unc_quant( nominal_value, uncertainty ), uncertainties)
     else:
       return make_unc_quant( nominal_value, uncertainty )
-
-
-
 
 class PositiveIntervalPropagator( ErrorPropagator ):
   def __init__(self, *args, **kargs):
@@ -132,6 +182,9 @@ class PositiveIntervalPropagator( ErrorPropagator ):
     #return {'nom': nominal_value, 'unc' : uncertainties }
     return (nominal_value, uncertainties)
 
+
+def ErrorPropagation(func):
+  return PositiveIntervalPropagator(func)
 
 
 

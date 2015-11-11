@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pyLabCalc import *
-
+from pyErrorProp import *
 
 
 
