@@ -183,8 +183,17 @@ class PositiveIntervalPropagator( ErrorPropagator ):
     return (nominal_value, uncertainties)
 
 
-def ErrorPropagation(func):
+def WithError(func):
   return PositiveIntervalPropagator(func)
+
+def WithErrorPropagator(propagator=None):
+  if propator is None:
+    return WithError
+
+  def Decorator(func):
+    return propagtor(func)
+
+  return Decorator
 
 
 
