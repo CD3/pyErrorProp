@@ -23,7 +23,7 @@ points. Now you want to calculate the distance from one of your observation poin
 
 
     # enable error propgation 
-    @ErrorPropagation
+    @WithError
     def calc( theta_1, theta_2, seperation ):
       # Calculate the distance from one observation point to the object
       # using the Law of Sines
@@ -47,6 +47,6 @@ points. Now you want to calculate the distance from one of your observation poin
 
 which outputs
 
-    60.0+/-1.0 degree 116.0+/-1.0 degree 140.0+/-5.0 meter
-    (1.7+/-0.8)e+03 meter
-    {'theta_2': <Quantity(578.5421929141839, 'meter')>, 'seperation': <Quantity(62.074912714275115, 'meter')>, 'theta_1': <Quantity(601.5321706669306, 'meter')>}
+    (60.0 +/- 1.0) degree (116.0 +/- 1.0) degree (140.0 +/- 5.0) meter
+    ((1.7 +/- 0.8)e+03) meter
+    {'seperation': <Quantity(62.074912714275115, 'meter')>, 'theta_2': <Quantity(578.5421929141839, 'meter')>, 'theta_1': <Quantity(601.5321706669306, 'meter')>}

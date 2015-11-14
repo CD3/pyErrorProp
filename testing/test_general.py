@@ -29,3 +29,40 @@ def test_simple_error_prop():
   uncertainty_value = numpy.sqrt( sum( [ x*x for x in unc ] ) )
   assert Close( nominal( v ), Q_(nominal_value,'m/s') )
   assert Close( uncertainty( v ), Q_(uncertainty_value,'m/s') )
+
+def test_doc_example_1():
+    print()
+
+    # CONFIGURATION
+    # 
+    # measure two angles separated by some distance
+
+    Angle1     = UQ_(60,    1)*units.degree
+    Angle2     = UQ_(180-64,1)*units.degree
+    Seperation = UQ_(140,   5)*units.meter
+
+    print(Angle1, Angle2, Seperation)
+
+
+    # enable error propgation 
+    @WithError
+    def calc( theta_1, theta_2, seperation ):
+      # Calculate the distance from one observation point to the object
+      # using the Law of Sines
+      #
+      #     d            L
+      #  --------     --------
+      #  sin(t_1)     sin(t_3)
+      #
+      # th_3 = 180 - th_1 - th_2
+      #
+      # L : separation distance
+      # th_1 : angle 1
+      # th_2 : angle 2
+      #
+      theta_3 = 180*units.degree - theta_1 - theta_2
+      return seperation * numpy.sin( theta_1 ) / numpy.sin(theta_3)
+
+    Distance,Uncertainties = calc( theta_1=Angle1, theta_2=Angle2, seperation=Seperation )
+    print(Distance)
+    print(Uncertainties)
