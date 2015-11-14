@@ -1,6 +1,5 @@
 #! /bin/env python
 
-import uncertainties
 import pint
 import numpy
 import copy
@@ -9,7 +8,7 @@ import collections
 units = pint.UnitRegistry()
 
 Q_ = units.Quantity
-UF_ = uncertainties.ufloat
+UQ_ = units.Measurement
 
 #########
 # utils 
@@ -23,23 +22,23 @@ def unitsof( v ):
 
 def nominal( x ):
   '''Return the nominal value of a quantity'''
-  if isinstance(x, uncertainties.Variable) or isinstance( x, uncertainties.AffineScalarFunc):
-    return x.nominal_value
+  try:
+    return x.value
+  except AttributeError:
+    if isinstance(x, units.Quantity):
+      return Q_( nominal( x.magnitude ), x.units )
 
-  if isinstance(x, units.Quantity):
-    return Q_( nominal( x.magnitude ), x.units )
-
-  return x
+    return x
 
 def uncertainty( x ):
   '''Returns the uncertainty of a quantity'''
-  if isinstance(x, uncertainties.Variable) or isinstance( x, uncertainties.AffineScalarFunc):
-    return x.std_dev
+  try:
+    return x.error
+  except AttributeError:
+    if isinstance(x, units.Quantity):
+      return Q_( uncertainty( x.magnitude ), x.units )
 
-  if isinstance(x, units.Quantity):
-    return Q_( uncertainty( x.magnitude ), x.units )
-
-  return 0.0
+    return 0
 
 def upper( x ):
   '''Return the upper bound on a quantity (nominal + uncertainty)'''
@@ -51,7 +50,8 @@ def lower( x ):
 
 def is_uncertain( x ):
   '''Test wether a quantity has uncertianty'''
-  if isinstance(x, uncertainties.Variable) or isinstance( x, uncertainties.AffineScalarFunc):
+
+  if uncertainty(x) is 0:
     return True
 
   return False
@@ -66,9 +66,9 @@ def make_unc_quant( nom, unc ):
     else:
       unc = nom*unc
 
-    return Q_( UF_(nom, unc), u )
+    return UQ_(nom, unc,u)
     
-  return UF_(nom,unc)
+  return UQ_(nom,unc)
 
 
 
@@ -179,7 +179,6 @@ class PositiveIntervalPropagator( ErrorPropagator ):
       mykargs[karg] = upper( kargs[karg] )
       uncertainties[karg] = self.func(*nominal_args,**mykargs) - nominal_value
 
-    #return {'nom': nominal_value, 'unc' : uncertainties }
     return (nominal_value, uncertainties)
 
 
