@@ -1,6 +1,9 @@
 #pyErrorProp
 
-This modules performs various calculations with uncertain quantities, including error propagation, with support for quantities (values with units).
+pyErrorProp is a python module that performs various calculations with uncertain quantities, including error propagation.
+The module uses `pint` to provide full support for physical quantities. Unlike the error propagation included with `pint` (which uses
+the `uncertainties` module), error propagation through arbitrary, user-defined functions is supported. The module includes a error propagation
+algorithm that handles both linear and non-linear functions, but allows for a user-defined algorithm to be used as well.
 
 **Features**
 - full unit support
