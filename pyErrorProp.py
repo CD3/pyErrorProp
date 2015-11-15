@@ -121,7 +121,7 @@ def relative_uncertainties( uncertainties ):
 # error propagators
 ####################
 
-class ErrorPropagator:
+class ErrorPropagator(object):
   def __init__(self, func = None):
     self.set_return_uncertainties(True)
     self.setFunc(func)
@@ -151,7 +151,8 @@ class ErrorPropagator:
 
 class PositiveIntervalPropagator( ErrorPropagator ):
   def __init__(self, *args, **kargs):
-    super().__init__( *args, **kargs )
+    # super().__init__( *args, **kargs )
+    super( PositiveIntervalPropagator, self ).__init__( *args, **kargs )
 
 
   def propagate_uncertainties(self, *args, **kargs):
