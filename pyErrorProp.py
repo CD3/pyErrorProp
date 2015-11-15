@@ -50,14 +50,13 @@ def lower( x ):
 
 def is_uncertain( x ):
   '''Test wether a quantity has uncertianty'''
-
   if uncertainty(x) is 0:
     return True
 
   return False
 
-def make_unc_quant( nom, unc ):
-  '''Create an uncertain quantity. '''
+def make_UQ( nom, unc ):
+  '''Create an uncertain quantity from two quantities'''
   if isinstance( nom, units.Quantity ):
     u   = nom.units
     nom = nom.magnitude
@@ -66,34 +65,22 @@ def make_unc_quant( nom, unc ):
     else:
       unc = nom*unc
 
-    return UQ_(nom, unc,u)
+    return UQ_(nom, unc, u)
     
   return UQ_(nom,unc)
 
 
-
-def compute_unc_quant( data ):
+def get_UQ( data ):
   '''Computes an uncertain quantity from a data set (computes the standard error)'''
   units = unitsof( data )
   nominal = numpy.mean( data )
   std_dev = numpy.std( data )
   std_err = std_dev / numpy.sqrt( len( data ) )
 
-  return make_unc_quant( nominal, std_err )
+  return make_UQ( nominal, std_err )
 
-def rel_unc( q ):
-  '''Computes the relative uncertainty of an uncertain quantity'''
-  return (uncertainty( q ) / nominal( q ) )*100
-
-def z( actual, measured ):
-  '''Compute the z value for two uncertain quantities'''
-  return ( numpy.abs( nominal(actual) - nominal(measured) ) ) / numpy.sqrt( uncertainty(actual)**2 + uncertainty(measured)**2 )
-
-def agree( q1, q2 ):
-  return z(q1,q2) < 2.0
-
-def percent_error( actual, measured ):
-  return ((nominal(measured)-nominal(actual))/nominal(actual))*100
+make_UQ_ = make_UQ  # for the sake of consistency
+get_UQ_ = get_UQ
 
 def sort_uncertainties(u):
   '''Sorts a list of uncertainties from largest to smallest'''
@@ -102,15 +89,21 @@ def sort_uncertainties(u):
 
   return u
 
-def relative_uncertainties( uncertainties ):
-  '''Determine the relative contribution of each uncertainty to the total uncertainty.'''
-  total_unc = ErrorPropagator.total_uncertainty( uncertainties )
-  relative_unc = dict()
-  for k,v in uncertainties.items():
-    relative_unc[k] = (total_unc - ErrorPropagator.total_uncertainty( collections.OrderedDict( filter( lambda it: it[0] != k, uncertainties.items() ) ) )  ) / total_unc
 
-  return relative_unc
+def rel_unc( q ):
+  '''Computes the relative uncertainty of an uncertain quantity'''
+  return (uncertainty( q ) / nominal( q ) )*100
 
+def percent_error( actual, measured ):
+  return ((nominal(measured)-nominal(actual))/nominal(actual))*100
+
+def z( actual, measured ):
+  '''Compute the z value for two uncertain quantities'''
+  return ( numpy.abs( nominal(actual) - nominal(measured) ) ) / numpy.sqrt( uncertainty(actual)**2 + uncertainty(measured)**2 )
+
+def agree( q1, q2 ):
+  '''Return true if to quantities are statistically the same.'''
+  return z(q1,q2) < 2.0
 
 
 
@@ -123,31 +116,38 @@ def relative_uncertainties( uncertainties ):
 
 class ErrorPropagator(object):
   def __init__(self, func = None):
-    self.set_return_uncertainties(True)
-    self.setFunc(func)
+    self.set_return_uncertainties(False)
+    self.set_func(func)
+    self.set_correlated(False)
 
-  def setFunc(self, func = None):
+  def set_func(self, func = None):
     self.func = func
 
   def set_return_uncertainties(self, v):
     self.return_uncertainties = v
 
-  @staticmethod
-  def total_uncertainty( uncertainties ):
+  def set_correlated(self, v):
+    self.correlated = v
+
+  def total_uncertainty( self, uncertainties ):
     '''Compute and return the total uncertainty from individual uncertainty contributions.'''
     if isinstance(uncertainties,dict) or isinstance(uncertainties,collecitons.OrderedDict) :
       uncs = uncertainties.values()
     else:
       uncs = uncertainties.values()
-    return numpy.sqrt( sum( [ x*x for x in uncs ] ) )
+
+    if self.correlated:
+      return sum( uncs )
+    else:
+      return numpy.sqrt( sum( [ x*x for x in uncs ] ) )
 
   def __call__(self, *args, **kargs):
     nominal_value, uncertainties = self.propagate_uncertainties( *args, **kargs )
-    uncertainty   = ErrorPropagator.total_uncertainty( uncertainties )
+    uncertainty   = self.total_uncertainty( uncertainties )
     if self.return_uncertainties:
-      return ( make_unc_quant( nominal_value, uncertainty ), uncertainties)
+      return ( make_UQ( nominal_value, uncertainty ), uncertainties)
     else:
-      return make_unc_quant( nominal_value, uncertainty )
+      return make_UQ( nominal_value, uncertainty )
 
 class PositiveIntervalPropagator( ErrorPropagator ):
   def __init__(self, *args, **kargs):

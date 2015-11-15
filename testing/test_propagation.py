@@ -42,7 +42,7 @@ def test_airtrack_examples():
     g_ = sympy.lambdify( (th,x,t), sol[g], "numpy" )
     return g_(angle, distance, time)
 
-  ans,_ = gravity(angle=angle,distance=distance,time=time)
+  ans = gravity(angle=angle,distance=distance,time=time)
 
   assert Close( nominal(ans), Q_(9.80,'m/s^2') )
   assert Close( uncertainty(ans) , Q_(0.25,'m/s^2') )

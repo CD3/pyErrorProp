@@ -20,7 +20,7 @@ def test_simple_error_prop():
   def velocity(x,t):
     return x/t
 
-  v,u = velocity(x,t)
+  v = velocity(x,t)
 
   nominal_value = 2.5/33e-3
   unc = [ (2.5+0.1)/33e-3 - nominal_value
@@ -63,6 +63,44 @@ def test_doc_example_1():
       theta_3 = 180*units.degree - theta_1 - theta_2
       return seperation * numpy.sin( theta_1 ) / numpy.sin(theta_3)
 
-    Distance,Uncertainties = calc( theta_1=Angle1, theta_2=Angle2, seperation=Seperation )
+    Distance = calc( theta_1=Angle1, theta_2=Angle2, seperation=Seperation )
     print(Distance)
-    print(Uncertainties)
+
+def test_doc_example_2():
+  print()
+
+  # 10 time measurements
+  TimeData = Q_([ 
+  0.50,
+  0.68,
+  0.76,
+  0.62,
+  0.70,
+  0.69,
+  0.52,
+  0.63,
+  0.59,
+  0.53], 's')
+
+  # measured time
+  Time = get_UQ_( TimeData )
+  # all dropped from the same height
+  Height = make_UQ_( 1.5*units.meter, 0.5*units.centimeter )
+
+  # a function to calculate the acceleration of gravity
+  # from our measurements with error propgation.
+  @WithError
+  def gravity( h, t ):
+    return 2 * h / t**2
+
+
+  # calculate gravity
+  Gravity = gravity( Height, Time )
+
+  print Time, Height
+  print Gravity
+
+  assert Close( nominal(     Gravity ), Q_(7.8,'m/s^2') )
+  assert Close( uncertainty( Gravity ), Q_(0.6,'m/s^2') )
+
+
