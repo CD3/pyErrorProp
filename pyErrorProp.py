@@ -184,14 +184,17 @@ class PositiveIntervalPropagator( ErrorPropagator ):
 
 
 def WithError(func):
-  return PositiveIntervalPropagator(func)
+  propagator = PositiveIntervalPropagator()
+  propagator.set_func( func )
+  return propagator
 
 def WithErrorPropagator(propagator=None):
-  if propator is None:
+  if propagator is None:
     return WithError
 
   def Decorator(func):
-    return propagtor(func)
+    propagator.set_func( func )
+    return propagator
 
   return Decorator
 
