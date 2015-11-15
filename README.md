@@ -88,6 +88,12 @@ timing how long it takes the ball bearing to hit the ground.
     print Time, Height
     print Gravity
 
+    # compute z-value from accepted value
+    print z(Gravity, Q_(9.8,'m/s^2'))
+    # does our value agree with the accepted value?
+    print agree( Gravity, Q_(9.8,'m/s^2') )
+
+
     assert Close( nominal(     Gravity ), Q_(7.8,'m/s^2') )
     assert Close( uncertainty( Gravity ), Q_(0.6,'m/s^2') )
 
