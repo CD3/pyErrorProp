@@ -97,13 +97,13 @@ def rel_unc( q ):
 def percent_error( actual, measured ):
   return ((nominal(measured)-nominal(actual))/nominal(actual))*100
 
-def z( actual, measured ):
+def z( x, y ):
   '''Compute the z value for two uncertain quantities'''
-  return ( numpy.abs( nominal(actual) - nominal(measured) ) ) / numpy.sqrt( uncertainty(actual)**2 + uncertainty(measured)**2 )
+  return ( numpy.abs( nominal(x) - nominal(y) ) ) / numpy.sqrt( uncertainty(x)**2 + uncertainty(y)**2 )
 
-def agree( q1, q2 ):
+def agree( x, y ):
   '''Return true if to quantities are statistically the same.'''
-  return z(q1,q2) < 2.0
+  return z(x,y) < 2.0
 
 
 

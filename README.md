@@ -47,7 +47,7 @@ which outputs
     (<Measurement(60.00, 1.00, degree)>, <Measurement(116.00, 1.00, degree)>, <Measurement(140.00, 5.00, meter)>)
     ((1.7 +/- 0.8)e+03) meter
 
-###Local Gravity
+###Gravity Measurement
 A student performs an experiment to calculate the local acceleration constant by dropping a steel ball bearing from a known height 10 times and
 timing how long it takes the ball bearing to hit the ground.
 
@@ -89,3 +89,5 @@ which outputs
 
     (0.622 +/- 0.026) second (1.500 +/- 0.005) meter
     (7.8 +/- 0.6) meter / second ** 2
+    3.34356847418 dimensionless
+    False
