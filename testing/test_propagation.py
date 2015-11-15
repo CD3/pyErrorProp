@@ -29,13 +29,12 @@ def test_ballistic_pendulum():
 
 
 def test_airtrack_examples():
-  angle    = Q_( UF_( 2.14 , 0.05 ), units.degree )
-  angle.ito(units.radians)
-  distance = UF_( 1.00 , 0.01 )* units.meter
-  time     = uncertainties.ufloat( 2.338, 0.005)* units.second
+  angle    = UQ_( 2.14 , 0.05, 'degree' )
+  distance = UQ_( 1.00 , 0.01 , 'm')
+  time     = UQ_( 2.338, 0.005, 's' )
 
   
-  @ErrorPropagation
+  @WithError
   def gravity(angle, distance, time):
     g,th,a,x,t = sympy.symbols('g th a x t')
     eqs = [ g*sympy.sin(th) - a, x - a*t*t/2 ]
@@ -45,5 +44,5 @@ def test_airtrack_examples():
 
   ans,_ = gravity(angle=angle,distance=distance,time=time)
 
-  assert Close( ans.nominal_value, 9.80 )
-  assert Close( ans.std_dev , 0.25 )
+  assert Close( nominal(ans), Q_(9.80,'m/s^2') )
+  assert Close( uncertainty(ans) , Q_(0.25,'m/s^2') )
