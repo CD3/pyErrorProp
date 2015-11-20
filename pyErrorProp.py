@@ -66,15 +66,15 @@ def make_UQ( nom, unc ):
   return UQ_(nom,unc)
 
 
-def get_UQ( data, dorounding = False ):
+def get_UQ( data, sigfigs = 2 ):
   '''Computes an uncertain quantity from a data set (computes the standard error)'''
   nominal = numpy.mean( data )
   std_dev = numpy.std( data )
   std_err = std_dev / numpy.sqrt( len( data ) )
 
   q = make_UQ( nominal, std_err )
-  if dorounding:
-    q = sigfig_round( q, 2 )
+  if sigfigs > 0:
+    q = sigfig_round( q, sigfigs )
   return q
 
 make_UQ_ = make_UQ  # for the sake of consistency

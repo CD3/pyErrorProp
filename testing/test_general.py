@@ -240,7 +240,7 @@ def test_data_based_calcs():
   # std err: 0.266143730423 s
   TimeData = [ 1,2,3,4,2,3,3,4,2,4,3,5,3,4,2,4,5 ]*units.second
 
-  Time = get_UQ_(TimeData, dorounding=True)
+  Time = get_UQ_(TimeData)
   assert Close( Q_(3.18,'s'),     nominal(Time), 0.00001 )
   assert Close( Q_(0.27,'s'), uncertainty(Time), 0.00001 )
 
