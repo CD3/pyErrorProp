@@ -90,6 +90,11 @@ def sort_uncertainties(u):
   return u
 
 
+
+####################
+# error calculations
+####################
+
 def rel_unc( q ):
   '''Computes the relative uncertainty of an uncertain quantity'''
   return (uncertainty( q ) / nominal( q ) )*100
@@ -106,6 +111,57 @@ def agree( x, y ):
   return z(x,y) < 2.0
 
 
+def get_sigfig_decimal_pos( v, n ):
+  '''Determine the decimal position of the n'th significant figure'''
+  # The simplest way to identify significant figures is to represent
+  # a number in scientific notation.
+  #
+  # examples:
+  #
+  # num       sci nota    1st sf    2nd sf
+  #
+  # 1.234  -> 1.234e+0 ->   0     -> +1
+  # 12.34  -> 1.234e+1 ->  -1     ->  0
+  # 0.1234 -> 1.234e-1 ->  +1     -> +2
+
+  fmt = '{:.0e}'
+  coeff,expo = fmt.format( float(v) ).split( 'e' )
+
+  return -int(expo) + n - 1
+
+
+def sigfig_round( v, n = 2, u = None ):
+  '''Round a value to given number of significant figures.'''
+
+  if not u is None:
+    # An uncertainty was given, and we want to round this
+    # uncertainty to the specified number of significant figures
+    # and then round the value to the same decimal position.
+    pass
+
+
+
+
+  # 1. get number in scientific notation
+  # 2. extract coefficient and exponent from scientific notation
+  # 3. round coefficient to decimal position corresponding to number of sigfigs requested
+  # 4. put rounded coeffcient with the exponent and ship out
+
+  # step 1
+  fmt = '{:.%de}' % (n - 1 + 20)
+  v_str = fmt.format( float(v) )
+
+  # step 2
+  coeff,expo = v_str.split( 'e' )
+
+  # step 3
+  c = round( float( coeff ), n-1 )
+  fmt = '{:.%df}' % (n-1)
+  c_str = fmt.format( float(c) )
+
+  # step 4
+  r_str = c_str + 'e' +expo 
+  return type(v)(float(r_str))
 
 
 

@@ -111,3 +111,57 @@ def test_doc_example_2():
   assert not agree( Gravity, Q_(9.8,'m/s^2') )
 
 
+def test_rounding():
+
+  #                      1 sf     2 sf
+  values = [ (1.1      , 1.0    , 1.1     )
+           , (1.4      , 1.0    , 1.4     )
+           , (1.5      , 2.0    , 1.5     )
+           , (1.9      , 2.0    , 1.9     )
+           , (0.01     , 0.01   , 0.010   )
+           , (0.011    , 0.01   , 0.011   )
+           , (0.014    , 0.01   , 0.014   )
+           , (0.0151   , 0.02   , 0.015   )
+           , (0.019    , 0.02   , 0.019   )
+           , (0.001    , 0.001  , 0.0010  )
+           , (0.0011   , 0.001  , 0.0011  )
+           , (0.0014   , 0.001  , 0.0014  )
+           , (0.00151  , 0.002  , 0.0015  )
+           , (0.0019   , 0.002  , 0.0019  )
+           , (0.0001   , 0.0001 , 0.00010 )
+           , (0.00011  , 0.0001 , 0.00011 )
+           , (0.00014  , 0.0001 , 0.00014 )
+           , (0.000151 , 0.0002 , 0.00015 )
+           , (0.00019  , 0.0002 , 0.00019 )
+           ]
+
+  for v in values:
+    assert Close( v[1], sigfig_round(v[0],1), 0.001 )
+    assert Close( v[2], sigfig_round(v[0],2), 0.001 )
+
+def test_sf_dec_count():
+
+  assert get_sigfig_decimal_pos(1.2345, 1) == 0
+  assert get_sigfig_decimal_pos(1.2345, 2) == 1
+  assert get_sigfig_decimal_pos(1.2345, 3) == 2
+  assert get_sigfig_decimal_pos(1.2345, 4) == 3
+  assert get_sigfig_decimal_pos(1.2345, 5) == 4
+
+  assert get_sigfig_decimal_pos(12.345, 1) == -1
+  assert get_sigfig_decimal_pos(12.345, 2) == 0
+  assert get_sigfig_decimal_pos(12.345, 3) == 1
+  assert get_sigfig_decimal_pos(12.345, 4) == 2
+  assert get_sigfig_decimal_pos(12.345, 5) == 3
+
+  assert get_sigfig_decimal_pos(0.12345, 1) == 1
+  assert get_sigfig_decimal_pos(0.12345, 2) == 2
+  assert get_sigfig_decimal_pos(0.12345, 3) == 3
+  assert get_sigfig_decimal_pos(0.12345, 4) == 4
+  assert get_sigfig_decimal_pos(0.12345, 5) == 5
+
+  assert get_sigfig_decimal_pos(0.000012345, 1) == 5
+  assert get_sigfig_decimal_pos(0.000012345, 2) == 6
+  assert get_sigfig_decimal_pos(0.000012345, 3) == 7
+  assert get_sigfig_decimal_pos(0.000012345, 4) == 8
+  assert get_sigfig_decimal_pos(0.000012345, 5) == 9
+
