@@ -35,9 +35,6 @@ def uncertainty( x ):
   try:
     return x.error
   except AttributeError:
-    if isinstance(x, units.Quantity):
-      return Q_( uncertainty( x.magnitude ), x.units )
-
     return 0
 
 def upper( x ):
@@ -51,9 +48,8 @@ def lower( x ):
 def is_uncertain( x ):
   '''Test wether a quantity has uncertianty'''
   if uncertainty(x) is 0:
-    return True
-
-  return False
+    return False
+  return True
 
 def make_UQ( nom, unc ):
   '''Create an uncertain quantity from two quantities'''
@@ -72,7 +68,6 @@ def make_UQ( nom, unc ):
 
 def get_UQ( data ):
   '''Computes an uncertain quantity from a data set (computes the standard error)'''
-  units = unitsof( data )
   nominal = numpy.mean( data )
   std_dev = numpy.std( data )
   std_err = std_dev / numpy.sqrt( len( data ) )
@@ -131,7 +126,21 @@ def get_sigfig_decimal_pos( v, n ):
 
 
 def sigfig_round( v, n = 2, u = None ):
-  '''Round a value to given number of significant figures.'''
+  '''Round a number or quantity to given number of significant figures.'''
+
+  # need to check for Measurement class first because a Measurement is a Quantity
+  if isinstance( v, units.Measurement ):
+    nom = nominal(v)
+    unc = uncertainty(v)
+    nom,unc = sigfig_round(nom,n,unc)
+    return UQ_( nom,unc )
+
+  if isinstance( v, units.Quantity ):
+    unit  = v.units
+    value = v.magnitude
+    unc   = u.to(unit).magnitude if not u is None else None
+    return Q_( sigfig_round(value,n,unc), unit )
+
 
   if not u is None:
     # An uncertainty was given, and we want to round this

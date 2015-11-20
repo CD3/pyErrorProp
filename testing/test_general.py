@@ -196,6 +196,42 @@ def test_unc_round():
 
 
 
+def test_quantity_rounding():
+
+  q = Q_(1.23456789, 'm/s')
+  assert Close( Q_(1.00,'m/s'), sigfig_round(q,1), 0.00001 )
+  assert Close( Q_(1.20,'m/s'), sigfig_round(q,2), 0.00001 )
+  assert Close( Q_(1.23,'m/s'), sigfig_round(q,3), 0.00001 )
+
+  q = Q_(100.23456789, 'm/s')
+  assert Close( Q_(100,'m/s'), sigfig_round(q,1), 0.00001 )
+  assert Close( Q_(100,'m/s'), sigfig_round(q,2), 0.00001 )
+  assert Close( Q_(100,'m/s'), sigfig_round(q,3), 0.00001 )
+
+  q = Q_(0.000000123456789, 'm/s')
+  assert Close( Q_(0.000000100,'m/s'), sigfig_round(q,1), 0.00001 )
+  assert Close( Q_(0.000000120,'m/s'), sigfig_round(q,2), 0.00001 )
+  assert Close( Q_(0.000000123,'m/s'), sigfig_round(q,3), 0.00001 )
+
+
+
+
+
+
+
+def test_measurement_rounding():
+  q = UQ_( 1.2345678, 0.234567, 'N/m' )
+  qr = sigfig_round( q )
+  assert Close( Q_(1.23,'N/m'),     nominal(qr), 0.00001 )
+  assert Close( Q_(0.23,'N/m'), uncertainty(qr), 0.00001 )
+  
+  q = UQ_( 1.2345678, 0.234567, 'N/m' )
+  qr = sigfig_round( q, 3 )
+  assert Close( Q_(1.235,'N/m'),     nominal(qr), 0.00001 )
+  assert Close( Q_(0.235,'N/m'), uncertainty(qr), 0.00001 )
+
+
+
 
 
 
