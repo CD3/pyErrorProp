@@ -165,3 +165,37 @@ def test_sf_dec_count():
   assert get_sigfig_decimal_pos(0.000012345, 4) == 8
   assert get_sigfig_decimal_pos(0.000012345, 5) == 9
 
+def test_unc_round():
+
+  val,unc = sigfig_round( 1.234567890, u=0.2345678, n=2 )
+
+  assert Close( 0.23, unc, 0.0001 )
+  assert Close( 1.23, val, 0.0001 )
+
+
+  val,unc = sigfig_round( 1.234567890, u=0.0345678, n=2 )
+
+  assert Close( 0.035, unc, 0.0001 )
+  assert Close( 1.235, val, 0.0001 )
+
+
+  val,unc = sigfig_round( 1.234567890, u=0.0045678, n=2 )
+
+  assert Close( 0.0046, unc, 0.0001 )
+  assert Close( 1.2346, val, 0.0001 )
+
+  val,unc = sigfig_round( 1.234567890, u=0.0005678, n=2 )
+
+  assert Close( 0.00057, unc, 0.0001 )
+  assert Close( 1.23467, val, 0.0001 )
+
+
+
+
+
+
+
+
+
+
+

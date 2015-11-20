@@ -137,32 +137,14 @@ def sigfig_round( v, n = 2, u = None ):
     # An uncertainty was given, and we want to round this
     # uncertainty to the specified number of significant figures
     # and then round the value to the same decimal position.
-    pass
+    nd = get_sigfig_decimal_pos( u,n )
+    return type(v)( round(float(v), nd ) ), type(u)( round(float(u), nd ) )
 
 
 
-
-  # 1. get number in scientific notation
-  # 2. extract coefficient and exponent from scientific notation
-  # 3. round coefficient to decimal position corresponding to number of sigfigs requested
-  # 4. put rounded coeffcient with the exponent and ship out
-
-  # step 1
-  fmt = '{:.%de}' % (n - 1 + 20)
-  v_str = fmt.format( float(v) )
-
-  # step 2
-  coeff,expo = v_str.split( 'e' )
-
-  # step 3
-  c = round( float( coeff ), n-1 )
-  fmt = '{:.%df}' % (n-1)
-  c_str = fmt.format( float(c) )
-
-  # step 4
-  r_str = c_str + 'e' +expo 
-  return type(v)(float(r_str))
-
+  # get the decimal position of the n'th sigfig and round
+  nd = get_sigfig_decimal_pos( v,n )
+  return type(v)( round(float(v), nd ) )
 
 
 
