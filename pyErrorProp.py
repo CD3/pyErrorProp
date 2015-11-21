@@ -14,6 +14,50 @@ UQ_ = units.Measurement
 # utils 
 #########
 
+pint_quantity_format = Q_.__format__
+
+def siunitx_unit_format(u):
+  def _tothe(power):
+    if power == 1:
+      return ''
+    elif power == 2:
+      return r'\squared'
+    elif power == 3:
+      return r'\cubed'
+    else:
+      return r'\tothe{%d}' % (power)
+
+  l = []
+  # loop through all units
+  for unit, power in sorted(u.items()):
+    # remove unit prefix if it exists
+    prefix = None
+    for p in units._prefixes.values():
+      p = str(p)
+      if len(p) > 0 and unit.find(p) == 0:
+        prefix = p
+        unit = unit.replace( prefix, '', 1 )
+        
+    if power < 0:
+      l.append(r'\per')
+    if not prefix is None:
+      l.append(r'\{0}'.format(prefix))
+    l.append(r'\{0}'.format(unit))
+    l.append(r'{0}'.format(_tothe(abs(power))))
+
+  return ''.join(l)
+
+def quantity_format(self,spec):
+  if len(spec) > 0:
+    if spec.find('Lx') > 0: # the LaTeX siunitx code
+      spec = spec.replace('Lx','')
+      ret = r'\SI[{0}][{1}]'.format( format(self.magnitude,spec), siunitx_unit_format(self.units) )
+      ret = ret.replace('[','{').replace(']','}')
+      return ret
+
+  return pint_quantity_format(self,spec)
+Q_.__format__ = quantity_format
+
 def unitsof( v ):
   if isinstance( v, units.Quantity ):
     return v.units

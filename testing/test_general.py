@@ -31,7 +31,7 @@ def test_simple_error_prop():
   assert Close( uncertainty( v ), Q_(uncertainty_value,'m/s') )
 
 def test_doc_example_1():
-    print()
+    # print()
 
     # CONFIGURATION
     # 
@@ -41,7 +41,7 @@ def test_doc_example_1():
     Angle2     = UQ_(180-64,1)*units.degree
     Seperation = UQ_(140,   5)*units.meter
 
-    print(Angle1, Angle2, Seperation)
+    # print(Angle1, Angle2, Seperation)
 
 
     # enable error propgation 
@@ -64,10 +64,10 @@ def test_doc_example_1():
       return seperation * numpy.sin( theta_1 ) / numpy.sin(theta_3)
 
     Distance = calc( theta_1=Angle1, theta_2=Angle2, seperation=Seperation )
-    print(Distance)
+    # print(Distance)
 
 def test_doc_example_2():
-  print()
+  # print()
 
   # 10 time measurements
   TimeData = Q_([ 
@@ -97,13 +97,13 @@ def test_doc_example_2():
   # calculate gravity
   Gravity = gravity( Height, Time )
 
-  print Time, Height
-  print Gravity
+  # print Time, Height
+  # print Gravity
 
   # compute z-value from accepted value
-  print z(Gravity, Q_(9.8,'m/s^2'))
+  # print z(Gravity, Q_(9.8,'m/s^2'))
   # does our value agree with the accepted value?
-  print agree( Gravity, Q_(9.8,'m/s^2') )
+  # print agree( Gravity, Q_(9.8,'m/s^2') )
 
   assert Close( nominal(     Gravity ), Q_(7.8,'m/s^2') )
   assert Close( uncertainty( Gravity ), Q_(0.6,'m/s^2') )
@@ -112,7 +112,6 @@ def test_doc_example_2():
 
 
 def test_rounding():
-
   #                      1 sf     2 sf
   values = [ (1.1      , 1.0    , 1.1     )
            , (1.4      , 1.0    , 1.4     )
@@ -121,17 +120,17 @@ def test_rounding():
            , (0.01     , 0.01   , 0.010   )
            , (0.011    , 0.01   , 0.011   )
            , (0.014    , 0.01   , 0.014   )
-           , (0.0151   , 0.02   , 0.015   )
+           , (0.01501  , 0.02   , 0.015   )
            , (0.019    , 0.02   , 0.019   )
            , (0.001    , 0.001  , 0.0010  )
            , (0.0011   , 0.001  , 0.0011  )
            , (0.0014   , 0.001  , 0.0014  )
-           , (0.00151  , 0.002  , 0.0015  )
+           , (0.001501 , 0.002  , 0.0015  )
            , (0.0019   , 0.002  , 0.0019  )
            , (0.0001   , 0.0001 , 0.00010 )
            , (0.00011  , 0.0001 , 0.00011 )
            , (0.00014  , 0.0001 , 0.00014 )
-           , (0.000151 , 0.0002 , 0.00015 )
+           , (0.0001501, 0.0002 , 0.00015 )
            , (0.00019  , 0.0002 , 0.00019 )
            ]
 
@@ -140,7 +139,6 @@ def test_rounding():
     assert Close( v[2], sigfig_round(v[0],2), 0.001 )
 
 def test_sf_dec_count():
-
   assert get_sigfig_decimal_pos(1.2345, 1) == 0
   assert get_sigfig_decimal_pos(1.2345, 2) == 1
   assert get_sigfig_decimal_pos(1.2345, 3) == 2
@@ -189,13 +187,6 @@ def test_unc_round():
   assert Close( 0.00057, unc, 0.0001 )
   assert Close( 1.23467, val, 0.0001 )
 
-
-
-
-
-
-
-
 def test_quantity_rounding():
 
   q = Q_(1.23456789, 'm/s')
@@ -213,12 +204,6 @@ def test_quantity_rounding():
   assert Close( Q_(0.000000120,'m/s'), sigfig_round(q,2), 0.00001 )
   assert Close( Q_(0.000000123,'m/s'), sigfig_round(q,3), 0.00001 )
 
-
-
-
-
-
-
 def test_measurement_rounding():
   q = UQ_( 1.2345678, 0.234567, 'N/m' )
   qr = sigfig_round( q )
@@ -230,10 +215,7 @@ def test_measurement_rounding():
   assert Close( Q_(1.235,'N/m'),     nominal(qr), 0.00001 )
   assert Close( Q_(0.235,'N/m'), uncertainty(qr), 0.00001 )
 
-
-
 def test_data_based_calcs():
-
   # a time data set
   # average: 3.17647058824 s
   # std dev: 1.09733871213 s
@@ -244,5 +226,14 @@ def test_data_based_calcs():
   assert Close( Q_(3.18,'s'),     nominal(Time), 0.00001 )
   assert Close( Q_(0.27,'s'), uncertainty(Time), 0.00001 )
 
+def test_quantity_formatting():
+  x = Q_(1.23456789, 'kg m^2 / s^2')
 
+  assert '{:.3}'.format( x )  ==  r'1.23 kilogram * meter ** 2 / second ** 2'
+  assert '{:.3L}'.format( x ) ==  r'1.23 \frac{kilogram \cdot meter^{2}}{second^{2}}'
+  assert '{:.3Lx}'.format( x ) == r'\SI{1.23}{\kilo\gram\meter\squared\per\second\squared}'
+  
 
+def test_decimal():
+  x = Q_(1.234, 'kg m^2 / s^2')
+  
