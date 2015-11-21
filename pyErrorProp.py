@@ -14,9 +14,8 @@ UQ_ = units.Measurement
 # utils 
 #########
 
-pint_quantity_format = Q_.__format__
-
 def siunitx_unit_format(u):
+
   def _tothe(power):
     if power == 1:
       return ''
@@ -28,7 +27,7 @@ def siunitx_unit_format(u):
       return r'\tothe{%d}' % (power)
 
   l = []
-  # loop through all units
+  # loop through all units in the container
   for unit, power in sorted(u.items()):
     # remove unit prefix if it exists
     prefix = None
@@ -47,16 +46,46 @@ def siunitx_unit_format(u):
 
   return ''.join(l)
 
+# pint_unit_format = units.Unit.__format__
+# def unit_format(self,spec):
+  # if len(spec) > 0:
+    # if spec.find('Lx') > 0: # the LaTeX siunitx code
+      # spec = spec.replace('Lx','')
+      # ret = r'\si[{0}]'.format( siunitx_unit_format(self.units) )
+      # ret = ret.replace('[','{').replace(']','}')
+      # return ret
+  # return pint_unit_format(self,spec)
+# units.Unit.__format__ = unit_format
+
+pint_quantity_format = units.Quantity.__format__
 def quantity_format(self,spec):
   if len(spec) > 0:
-    if spec.find('Lx') > 0: # the LaTeX siunitx code
+    if 'Lx' in spec: # the LaTeX siunitx code
       spec = spec.replace('Lx','')
-      ret = r'\SI[{0}][{1}]'.format( format(self.magnitude,spec), siunitx_unit_format(self.units) )
-      ret = ret.replace('[','{').replace(']','}')
+      # todo: add support for extracting options
+      opts = ''
+      ret = r'\SI[%s]{%s}{%s}'%( opts, format(self.magnitude,spec), siunitx_unit_format(self.units) )
       return ret
-
   return pint_quantity_format(self,spec)
-Q_.__format__ = quantity_format
+units.Quantity.__format__ = quantity_format
+
+pint_measurement_format = units.Measurement.__format__
+def measurement_format(self,spec):
+  if len(spec) > 0:
+    if 'Lx' in spec: # the LaTeX siunitx code
+      # the uncertainties module supports formatting 
+      # numbers in () notation, which siunitx actually
+      # accepts as input. we just need to give the 'S'
+      # formatting option.
+      spec = spec.replace('Lx','S')
+      # todo: add support for extracting options
+      opts = 'separate-uncertainty=true'
+      mag = format( self.magnitude, spec )
+      ret = r'\SI[%s]{%s}{%s}'%( opts, mag, siunitx_unit_format(self.units) )
+      return ret
+  return pint_measurement_format(self,spec)
+units.Measurement.__format__ = measurement_format
+
 
 def unitsof( v ):
   if isinstance( v, units.Quantity ):

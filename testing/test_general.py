@@ -231,7 +231,22 @@ def test_quantity_formatting():
 
   assert '{:.3}'.format( x )  ==  r'1.23 kilogram * meter ** 2 / second ** 2'
   assert '{:.3L}'.format( x ) ==  r'1.23 \frac{kilogram \cdot meter^{2}}{second^{2}}'
-  assert '{:.3Lx}'.format( x ) == r'\SI{1.23}{\kilo\gram\meter\squared\per\second\squared}'
+  assert '{:.3Lx}'.format( x ) == r'\SI[]{1.23}{\kilo\gram\meter\squared\per\second\squared}'
+
+def test_measurement_formatting():
+  x = UQ_(1.23456789, 0.0045678, 'kg m^2 / s^2')
+  
+  assert '{:.2u}'.format( x )  ==  r'(1.2346 +/- 0.0046) kilogram * meter ** 2 / second ** 2'
+  assert '{:.2uL}'.format( x ) ==  r'\left(1.2346 \pm 0.0046\right) \frac{kilogram \cdot meter^{2}}{second^{2}}'
+  assert '{:.2uLx}'.format( x ) == r'\SI[separate-uncertainty=true]{1.2346(46)}{\kilo\gram\meter\squared\per\second\squared}'
+
+def test_output_formatting():
+  x = Q_(1.23456789, 'kg m^2 / s^2')
+  with open('quantity_formatting.latex','w') as f:
+    f.write( '{:.2Lx}'.format( x ) )
+  x = UQ_(1.23456789, 0.0045678, 'kg m^2 / s^2')
+  with open('measurement_formatting.latex','w') as f:
+    f.write( '{:.2uLx}'.format( x*1e7 ) )
   
 
 def test_decimal():
