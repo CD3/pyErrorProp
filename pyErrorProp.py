@@ -4,6 +4,7 @@ import pint
 import numpy
 import copy
 import collections
+import decimal
 
 units = pint.UnitRegistry()
 
@@ -46,17 +47,6 @@ def siunitx_unit_format(u):
 
   return ''.join(l)
 
-# pint_unit_format = units.Unit.__format__
-# def unit_format(self,spec):
-  # if len(spec) > 0:
-    # if spec.find('Lx') > 0: # the LaTeX siunitx code
-      # spec = spec.replace('Lx','')
-      # ret = r'\si[{0}]'.format( siunitx_unit_format(self.units) )
-      # ret = ret.replace('[','{').replace(']','}')
-      # return ret
-  # return pint_unit_format(self,spec)
-# units.Unit.__format__ = unit_format
-
 pint_quantity_format = units.Quantity.__format__
 def quantity_format(self,spec):
   if len(spec) > 0:
@@ -85,6 +75,15 @@ def measurement_format(self,spec):
       return ret
   return pint_measurement_format(self,spec)
 units.Measurement.__format__ = measurement_format
+
+
+pint_quantity_new  = units.Quantity.__new__
+def quantity_new(cls,value,units=None):
+  if isinstance(value, (str,unicode)):
+    value = decimal.Decimal( value )
+  return pint_quantity_new( cls, value, units )
+units.Quantity.__new__ = staticmethod(quantity_new)
+
 
 
 def unitsof( v ):

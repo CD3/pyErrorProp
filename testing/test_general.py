@@ -250,5 +250,21 @@ def test_output_formatting():
   
 
 def test_decimal():
-  x = Q_(1.234, 'kg m^2 / s^2')
+  import decimal
+  print
+  x = Q_(0.15, 'kg m^2 / s^2')
+  assert '{:.1f~}'.format(x) == '0.1 kg * m ** 2 / s ** 2' # rounds to 0.1 because 0.15 is really 0.1499...
+  x = Q_(decimal.Decimal('0.15'), 'kg m^2 / s^2')
+  assert '{:.1f~}'.format(x) == '0.2 kg * m ** 2 / s ** 2'  # rounds correctly because decimal module handles this
+  x = Q_('0.15', 'kg m^2 / s^2')
+  assert '{:.1f~}'.format(x) == '0.2 kg * m ** 2 / s ** 2' # passing string as value should use decimal module
   
+
+  x = Q_('0.15', 'm')
+  t = Q_('0.1', 'ms')
+  v = x / t
+
+  a = Q_(30, 'degree')
+  # v_x = v*numpy.cos( a ) # can't mix Decimal and float types...
+
+
