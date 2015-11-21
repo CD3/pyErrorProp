@@ -311,6 +311,12 @@ def WithError(func):
   propagator.set_func( func )
   return propagator
 
+def WithUncertainties(func):
+  propagator = PositiveIntervalPropagator()
+  propagator.set_func( func )
+  propagator.set_return_uncertainties(True)
+  return propagator
+
 def WithErrorPropagator(propagator=None):
   if propagator is None:
     return WithError
