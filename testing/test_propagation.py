@@ -27,7 +27,6 @@ def test_ballistic_pendulum():
 
   sol = sympy.solve( eqs, v0 )
 
-
 def test_airtrack_examples():
   angle    = UQ_( 2.14 , 0.05, 'degree' )
   distance = UQ_( 1.00 , 0.01 , 'm')
@@ -46,3 +45,23 @@ def test_airtrack_examples():
 
   assert Close( nominal(ans), Q_(9.80,'m/s^2') )
   assert Close( uncertainty(ans) , Q_(0.25,'m/s^2') )
+
+def test_auto_propagator():
+
+  Length = Q_(10,'m')
+  Width  = Q_(5,'m')
+
+  @WithAutoError()
+  def area( l, w ):
+    return l*w
+
+  Area = area( Length, Width )
+
+  A0 = Length*Width
+  A1 = Length*Width*1.01
+  A2 = Length*1.01*Width
+
+  U = numpy.sqrt( (A1-A0)**2 + (A2-A0)**2 )
+
+  assert Close( A0, nominal(Area), 0.01 )
+  assert Close(  U, uncertainty(Area), 0.01 )

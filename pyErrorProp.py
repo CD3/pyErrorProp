@@ -273,12 +273,9 @@ class ErrorPropagator(object):
 
 class PositiveIntervalPropagator( ErrorPropagator ):
   def __init__(self, *args, **kargs):
-    # super().__init__( *args, **kargs )
     super( PositiveIntervalPropagator, self ).__init__( *args, **kargs )
 
-
   def propagate_uncertainties(self, *args, **kargs):
-
     nominal_args = []
     for i,a in enumerate(args):
       nominal_args.append( nominal(a) )
@@ -304,6 +301,28 @@ class PositiveIntervalPropagator( ErrorPropagator ):
 
     return (nominal_value, uncertainties)
 
+class AutoErrorPropagator( PositiveIntervalPropagator ):
+  '''An error propagator that automatically propagates error based on some tolerance. For example,
+     by default the propagator determines the uncertainy in the result by assuming all input parameters
+     have a 1% error.'''
+  def __init__(self, tol = 0.01, sigfigs = None, *args, **kargs):
+    self.tol = tol
+    self.sigfigs = sigfigs
+    super( AutoErrorPropagator, self ).__init__( *args, **kargs )
+
+  def propagate_uncertainties(self, *args, **kargs):
+    new_args = []
+    for i,a in enumerate(args):
+      m = UQ_(a, self.tol*a)
+      new_args.append( m )
+
+    new_kargs = dict()
+    for k,v in kargs.items():
+      m = UQ_(a, self.tol*a)
+      new_kargs[k] = m
+
+    return super( AutoErrorPropagator, self).propagate_uncertainties( *new_args, **new_kargs )
+
 
 def WithError(func):
   propagator = PositiveIntervalPropagator()
@@ -315,6 +334,18 @@ def WithUncertainties(func):
   propagator.set_func( func )
   propagator.set_return_uncertainties(True)
   return propagator
+
+def WithAutoError(tol=0.01,sigfigs=None):
+  propagator = AutoErrorPropagator()
+  propagator.tol = tol
+  propagator.sigfigs = sigfigs
+
+  def Decorator(func):
+    propagator.func = func
+    return propagator
+
+  return Decorator
+
 
 def WithErrorPropagator(propagator=None):
   if propagator is None:

@@ -41,13 +41,16 @@ HeightMeasurements['Eric-2.0m'] = UQ_( Q_(2.0,'m'), Q_(1,'cm') )
 HeightMeasurements[  'CD-2.0m'] = UQ_( Q_(2.0,'m'), Q_(1,'cm') )
 
 # CALCULATIONS
-@WithError
+@WithUncertainties
 def Gravity( h, t ):
   return 2*h/t**2
 
 GravityCalculations =  dict()
+GravityUncertainties = dict()
 for key in TimeData.keys():
-  GravityCalculations[key] = Gravity( HeightMeasurements[key], TimeMeasurements[key] )
+  GravityCalculations[key],GravityUncertainties[key] = Gravity( HeightMeasurements[key], TimeMeasurements[key] )
+  print '{:.5f}'.format(TimeMeasurements[key]), HeightMeasurements[key], '{:.5f}'.format(GravityCalculations[key])
+  print GravityUncertainties[key]
 
 
 # generage a latex document with our results
