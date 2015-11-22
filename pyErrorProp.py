@@ -15,7 +15,7 @@ UQ_ = units.Measurement
 # utils 
 #########
 
-def siunitx_unit_format(u):
+def siunitx_unit_format(u, UR):
 
   def _tothe(power):
     if power == 1:
@@ -32,7 +32,7 @@ def siunitx_unit_format(u):
   for unit, power in sorted(u.items()):
     # remove unit prefix if it exists
     prefix = None
-    for p in units._prefixes.values():
+    for p in UR._prefixes.values():
       p = str(p)
       if len(p) > 0 and unit.find(p) == 0:
         prefix = p
@@ -47,19 +47,19 @@ def siunitx_unit_format(u):
 
   return ''.join(l)
 
-pint_quantity_format = units.Quantity.__format__
+pint_quantity_format = pint.quantity._Quantity.__format__
 def quantity_format(self,spec):
   if len(spec) > 0:
     if 'Lx' in spec: # the LaTeX siunitx code
       spec = spec.replace('Lx','')
       # todo: add support for extracting options
       opts = ''
-      ret = r'\SI[%s]{%s}{%s}'%( opts, format(self.magnitude,spec), siunitx_unit_format(self.units) )
+      ret = r'\SI[%s]{%s}{%s}'%( opts, format(self.magnitude,spec), siunitx_unit_format(self.units, self._REGISTRY) )
       return ret
   return pint_quantity_format(self,spec)
-units.Quantity.__format__ = quantity_format
+pint.quantity._Quantity.__format__ = quantity_format
 
-pint_measurement_format = units.Measurement.__format__
+pint_measurement_format = pint.measurement._Measurement.__format__
 def measurement_format(self,spec):
   if len(spec) > 0:
     if 'Lx' in spec: # the LaTeX siunitx code
@@ -71,18 +71,18 @@ def measurement_format(self,spec):
       # todo: add support for extracting options
       opts = 'separate-uncertainty=true'
       mag = format( self.magnitude, spec )
-      ret = r'\SI[%s]{%s}{%s}'%( opts, mag, siunitx_unit_format(self.units) )
+      ret = r'\SI[%s]{%s}{%s}'%( opts, mag, siunitx_unit_format(self.units, self._REGISTRY) )
       return ret
   return pint_measurement_format(self,spec)
-units.Measurement.__format__ = measurement_format
+pint.measurement._Measurement.__format__ = measurement_format
 
 
-pint_quantity_new  = units.Quantity.__new__
+pint_quantity_new  = pint.quantity._Quantity.__new__
 def quantity_new(cls,value,units=None):
   if isinstance(value, (str,unicode)):
     value = decimal.Decimal( value )
   return pint_quantity_new( cls, value, units )
-units.Quantity.__new__ = staticmethod(quantity_new)
+pint.quantity._Quantity.__new__ = staticmethod(quantity_new)
 
 
 
@@ -125,10 +125,10 @@ def is_uncertain( x ):
 
 def make_UQ( nom, unc ):
   '''Create an uncertain quantity from two quantities'''
-  if isinstance( nom, units.Quantity ):
+  if isinstance( nom, pint.quantity._Quantity ):
     u   = nom.units
     nom = nom.magnitude
-    if isinstance( unc, units.Quantity ):
+    if isinstance( unc, pint.quantity._Quantity ):
       unc = unc.to(u).magnitude
     else:
       unc = nom*unc
@@ -203,14 +203,17 @@ def get_sigfig_decimal_pos( v, n ):
 def sigfig_round( v, n = 2, u = None ):
   '''Round a number or quantity to given number of significant figures.'''
 
+  if n < 1:
+    return v
+
   # need to check for Measurement class first because a Measurement is a Quantity
-  if isinstance( v, units.Measurement ):
+  if isinstance( v, pint.measurement._Measurement):
     nom = nominal(v)
     unc = uncertainty(v)
     nom,unc = sigfig_round(nom,n,unc)
     return UQ_( nom,unc )
 
-  if isinstance( v, units.Quantity ):
+  if isinstance( v, pint.quantity._Quantity ):
     unit  = v.units
     value = v.magnitude
     unc   = u.to(unit).magnitude if not u is None else None
