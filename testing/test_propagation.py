@@ -65,3 +65,28 @@ def test_auto_propagator():
 
   assert Close( A0, nominal(Area), 0.01 )
   assert Close(  U, uncertainty(Area), 0.01 )
+
+def test_multiple_funcs():
+
+  def Area(l,w):
+    return l*w
+
+  @WithError
+  def Vol(l,w,h):
+    a = Area(l,w)
+    return a*h
+
+  Length = UQ_(2.,.1,'m')
+  Width  = UQ_(3.,.8,'m')
+  Height = UQ_(4.,.4,'m')
+
+  V = (2.0+0.0)*(3.0+0.0)*(4.0+0.0)
+  dV1 = (2.0+0.1)*(3.0+0.0)*(4.0+0.0) - V
+  dV2 = (2.0+0.0)*(3.0+0.8)*(4.0+0.0) - V
+  dV3 = (2.0+0.0)*(3.0+0.0)*(4.0+0.4) - V
+  dV = numpy.sqrt( dV1**2 + dV2**2 + dV3**2 )
+
+  Volume = Vol(Length,Width,Height)
+  print Volume
+  assert Close(  V,     nominal(Volume).magnitude, 0.001 )
+  assert Close( dV, uncertainty(Volume).magnitude, 0.001 )
