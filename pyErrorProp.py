@@ -316,13 +316,15 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
   def propagate_uncertainties(self, *args, **kargs):
     new_args = []
     for i,a in enumerate(args):
-      m = UQ_(a, self.tol*a)
-      new_args.append( m )
+      if not isinstance( a, pint.measurement._Measurement ):
+        a = UQ_(a, self.tol*a)
+      new_args.append( a )
 
     new_kargs = dict()
     for k,v in kargs.items():
-      m = UQ_(a, self.tol*a)
-      new_kargs[k] = m
+      if not isinstance( a, pint.measurement._Measurement ):
+        v = UQ_(v, self.tol*v)
+      new_kargs[k] = v
 
     return super( AutoErrorPropagator, self).propagate_uncertainties( *new_args, **new_kargs )
 
