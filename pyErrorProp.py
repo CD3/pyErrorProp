@@ -317,7 +317,7 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
     new_args = []
     for i,a in enumerate(args):
       if not isinstance( a, pint.measurement._Measurement ):
-        a = UQ_(a, self.tol*a)
+        a = UQ_(a, abs(self.tol*a))
       new_args.append( a )
 
     new_kargs = dict()
