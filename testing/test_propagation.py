@@ -58,8 +58,8 @@ def test_auto_propagator():
   Area = area( Length, Width )
 
   A0 = Length*Width
-  A1 = Length*Width*1.01
-  A2 = Length*1.01*Width
+  A1 = Length*(Width+Q_(0.01,'m'))
+  A2 = (Length+Q_(0.1,'m'))*Width
 
   U = numpy.sqrt( (A1-A0)**2 + (A2-A0)**2 )
 

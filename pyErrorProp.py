@@ -15,68 +15,6 @@ UQ_ = units.Measurement
 # utils 
 #########
 
-def siunitx_unit_format(u, UR):
-
-  def _tothe(power):
-    if power == 1:
-      return ''
-    elif power == 2:
-      return r'\squared'
-    elif power == 3:
-      return r'\cubed'
-    else:
-      return r'\tothe{%d}' % (power)
-
-  l = []
-  # loop through all units in the container
-  for unit, power in sorted(u.items()):
-    # remove unit prefix if it exists
-    prefix = None
-    for p in UR._prefixes.values():
-      p = str(p)
-      if len(p) > 0 and unit.find(p) == 0:
-        prefix = p
-        unit = unit.replace( prefix, '', 1 )
-        
-    if power < 0:
-      l.append(r'\per')
-    if not prefix is None:
-      l.append(r'\{0}'.format(prefix))
-    l.append(r'\{0}'.format(unit))
-    l.append(r'{0}'.format(_tothe(abs(power))))
-
-  return ''.join(l)
-
-pint_quantity_format = pint.quantity._Quantity.__format__
-def quantity_format(self,spec):
-  if len(spec) > 0:
-    if 'Lx' in spec: # the LaTeX siunitx code
-      spec = spec.replace('Lx','')
-      # todo: add support for extracting options
-      opts = ''
-      ret = r'\SI[%s]{%s}{%s}'%( opts, format(self.magnitude,spec), siunitx_unit_format(self.units, self._REGISTRY) )
-      return ret
-  return pint_quantity_format(self,spec)
-pint.quantity._Quantity.__format__ = quantity_format
-
-pint_measurement_format = pint.measurement._Measurement.__format__
-def measurement_format(self,spec):
-  if len(spec) > 0:
-    if 'Lx' in spec: # the LaTeX siunitx code
-      # the uncertainties module supports formatting 
-      # numbers in () notation, which siunitx actually
-      # accepts as input. we just need to give the 'S'
-      # formatting option.
-      spec = spec.replace('Lx','S')
-      # todo: add support for extracting options
-      opts = 'separate-uncertainty=true'
-      mag = format( self.magnitude, spec )
-      ret = r'\SI[%s]{%s}{%s}'%( opts, mag, siunitx_unit_format(self.units, self._REGISTRY) )
-      return ret
-  return pint_measurement_format(self,spec)
-pint.measurement._Measurement.__format__ = measurement_format
-
-
 pint_quantity_new  = pint.quantity._Quantity.__new__
 def quantity_new(cls,value,units=None):
   if isinstance(value, (str,unicode)):
@@ -90,7 +28,13 @@ def unitsof( v ):
   if isinstance( v, units.Quantity ):
     return v.units
 
-  return units.Quantity('dimensionless').units
+  return Q_(1,'dimensionless').units
+
+def magof( v ):
+  if isinstance( v, units.Quantity ):
+    return v.magnitude
+
+  return v
 
 def nominal( x ):
   '''Return the nominal value of a quantity'''
@@ -170,7 +114,10 @@ def rel_unc( q ):
   return (uncertainty( q ) / nominal( q ) )*100
 
 def percent_error( actual, measured ):
-  return ((nominal(measured)-nominal(actual))/nominal(actual))*100
+  return abs((nominal(measured)-nominal(actual))/nominal(actual))*100
+
+def percent_difference( m1, m2 ):
+  return abs((nominal(m1)-nominal(m2))/(nominal(m1)+nominal(m2)))*200
 
 def z( x, y ):
   '''Compute the z value for two uncertain quantities'''
@@ -178,7 +125,7 @@ def z( x, y ):
 
 def agree( x, y ):
   '''Return true if to quantities are statistically the same.'''
-  return z(x,y) < 2.0
+  return z(x,y) <= 2.0
 
 
 def get_sigfig_decimal_pos( v, n ):
@@ -201,7 +148,20 @@ def get_sigfig_decimal_pos( v, n ):
 
 
 def sigfig_round( v, n = 2, u = None ):
-  '''Round a number or quantity to given number of significant figures.'''
+  '''Round a number or quantity to given number of significant figures.
+  
+  params:
+    v    the value to round.
+    n    the number of significant figures to round to.
+    u    an uncertainty to round to.
+    
+    if an uncertainty is given, it is rounded to n significant figures and the value v
+    is rounded to the same decimal postion as the result.
+    
+    Notes:
+
+    If v is a measurment, its uncertainty is used for u.
+    '''
 
   if n < 1:
     return v
@@ -305,11 +265,10 @@ class PositiveIntervalPropagator( ErrorPropagator ):
     return (nominal_value, uncertainties)
 
 class AutoErrorPropagator( PositiveIntervalPropagator ):
-  '''An error propagator that automatically propagates error based on some tolerance. For example,
+  '''An error propagator that automatically propagates error based on a given number of significant figures. For example,
      by default the propagator determines the uncertainy in the result by assuming all input parameters
-     have a 1% error.'''
-  def __init__(self, tol = 0.01, sigfigs = None, *args, **kargs):
-    self.tol = tol
+     have 3 significant figures and the last significant figure is uncertain by plus/minus 1.'''
+  def __init__(self, sigfigs = 3, *args, **kargs):
     self.sigfigs = sigfigs
     super( AutoErrorPropagator, self ).__init__( *args, **kargs )
 
@@ -317,7 +276,14 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
     new_args = []
     for i,a in enumerate(args):
       if not isinstance( a, pint.measurement._Measurement ):
-        a = UQ_(a, abs(self.tol*a))
+        # round to correct number of sigfigs
+        val = sigfig_round( a, self.sigfigs )
+        # get sigfig decimal postion
+        pos = get_sigfig_decimal_pos( magof(a), self.sigfigs )
+        # the uncertainty is the last significant figure plus-or-minus 1
+        unc = Q_(pow(10,-pos),unitsof(a))
+
+        a = UQ_(val, unc)
       new_args.append( a )
 
     new_kargs = dict()
@@ -340,9 +306,8 @@ def WithUncertainties(func):
   propagator.set_return_uncertainties(True)
   return propagator
 
-def WithAutoError(tol=0.01,sigfigs=None):
+def WithAutoError(sigfigs=3):
   propagator = AutoErrorPropagator()
-  propagator.tol = tol
   propagator.sigfigs = sigfigs
 
   def Decorator(func):

@@ -7,6 +7,8 @@ import StringIO
 import pylatex as pl
 from pyErrorProp import *
 
+pl.base_classes.LatexObject._escape = False
+
 # RAW DATA
 DataTable = StringIO.StringIO('''
 Eric-1.5m CD-1.5m Eric-2.0m CD-2.0m
@@ -59,7 +61,7 @@ doc.packages.append( pl.Package( 'siunitx' ) )
 
 with doc.create(pl.Section('Raw Data')):
   doc.append( 'Data was collected by dropping a steal ball bearing from a givin height 10 times and timing the fall.\n' )
-  with doc.create(pl.Table('llll')) as table:
+  with doc.create(pl.Tabular('llll')) as table:
     table.add_row(('Eric \SI{1.5}{\meter} (s)', 'C.D. \SI{1.5}{\meter} (s)', 'Eric \SI{2}{\meter} (s)', 'C.D. \SI{2}{\meter} (s)'))
     table.add_hline()
     for i in range(10):
@@ -69,7 +71,7 @@ with doc.create(pl.Section('Raw Data')):
       table.add_row( r )
   
   doc.append( '\nUncertainy for each time measurement is taken as the standard error of the 10 trials. Uncertainty for all heights was taken to be \SI{1}{\centi\meter}.\n' )
-  with doc.create(pl.Table('r@{: }l')) as table:
+  with doc.create(pl.Tabular(pl.NoEscape('r@{: }l'))) as table:
     table.add_row(('Eric \SI{1.5}{\meter}', '{:.1uLx}'.format(TimeMeasurements['Eric-1.5m'])))
     table.add_row(('C.D. \SI{1.5}{\meter}', '{:.1uLx}'.format(TimeMeasurements['CD-1.5m'])))
     table.add_row(('Eric \SI{2}{\meter}', '{:.1uLx}'.format(TimeMeasurements['Eric-2.0m'])))
@@ -77,7 +79,7 @@ with doc.create(pl.Section('Raw Data')):
 
 
   doc.append( '\nGravitational acceleration was calculated for each drop height.rror of the 10 trials.\n' )
-  with doc.create(pl.Table('r@{: }l')) as table:
+  with doc.create(pl.Tabular(pl.NoEscape('r@{: }l'))) as table:
     table.add_row(('Eric \SI{1.5}{\meter}', '{:.1uLx}'.format(GravityCalculations['Eric-1.5m'])))
     table.add_row(('C.D. \SI{1.5}{\meter}', '{:.1uLx}'.format(GravityCalculations['CD-1.5m'])))
     table.add_row(('Eric \SI{2}{\meter}', '{:.1uLx}'.format(GravityCalculations['Eric-2.0m'])))
