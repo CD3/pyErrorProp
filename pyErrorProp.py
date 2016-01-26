@@ -81,6 +81,19 @@ def make_UQ( nom, unc ):
     
   return UQ_(nom,unc)
 
+def make_sigfig_UQ( nom, sigfigs ):
+  '''Create an uncertaint quantity from a quantity and number of sigfigs. The
+  uncertain quantity will have an error that corresponds to the last
+  significant figure plus or minus 1.'''
+  nom = nominal( nom )
+  # round to correct number of sigfigs
+  val = sigfig_round( nom, sigfigs )
+  # get sigfig decimal postion
+  pos = get_sigfig_decimal_pos( magof(nom), sigfigs )
+  # the uncertainty is the last significant figure plus-or-minus 1
+  unc = Q_(pow(10,-pos),unitsof(nom))
+
+  return UQ_(val, unc)
 
 def get_UQ( data, sigfigs = 2 ):
   '''Computes an uncertain quantity from a data set (computes the standard error)'''
@@ -268,22 +281,16 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
   '''An error propagator that automatically propagates error based on a given number of significant figures. For example,
      by default the propagator determines the uncertainy in the result by assuming all input parameters
      have 3 significant figures and the last significant figure is uncertain by plus/minus 1.'''
-  def __init__(self, sigfigs = 3, *args, **kargs):
+  def __init__(self, sigfigs = 3, minerror = False, *args, **kargs):
     self.sigfigs = sigfigs
+    self.minerror = minerror
     super( AutoErrorPropagator, self ).__init__( *args, **kargs )
 
   def propagate_uncertainties(self, *args, **kargs):
     new_args = []
     for i,a in enumerate(args):
       if not isinstance( a, pint.measurement._Measurement ):
-        # round to correct number of sigfigs
-        val = sigfig_round( a, self.sigfigs )
-        # get sigfig decimal postion
-        pos = get_sigfig_decimal_pos( magof(a), self.sigfigs )
-        # the uncertainty is the last significant figure plus-or-minus 1
-        unc = Q_(pow(10,-pos),unitsof(a))
-
-        a = UQ_(val, unc)
+        a = make_sigfig_UQ( a, self.sigfigs )
       new_args.append( a )
 
     new_kargs = dict()
@@ -292,7 +299,17 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
         v = UQ_(v, self.tol*v)
       new_kargs[k] = v
 
-    return super( AutoErrorPropagator, self).propagate_uncertainties( *new_args, **new_kargs )
+    value,uncertainties = super( AutoErrorPropagator, self).propagate_uncertainties( *new_args, **new_kargs )
+
+    if self.minerror:
+      # check to see if the uncertainty is less than the number of significant figures.
+      # if so, set it to the last sigfig plus-or-minus 1
+      qq = make_sigfig_UQ( nominal( value ), self.sigfigs )
+      if uncertainty(qq) > self.total_uncertainty( uncertainties ):
+        value = nominal(qq)
+        uncertainties = { 0 : uncertainty(qq) }
+    
+    return value, uncertainties
 
 
 def WithError(func):
@@ -306,9 +323,10 @@ def WithUncertainties(func):
   propagator.set_return_uncertainties(True)
   return propagator
 
-def WithAutoError(sigfigs=3):
+def WithAutoError(sigfigs=3, minerror=True):
   propagator = AutoErrorPropagator()
   propagator.sigfigs = sigfigs
+  propagator.minerror = minerror
 
   def Decorator(func):
     propagator.func = func
