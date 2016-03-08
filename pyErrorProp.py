@@ -67,6 +67,70 @@ def is_uncertain( x ):
     return False
   return True
 
+def get_sigfig_decimal_pos( v, n ):
+  '''Determine the decimal position of the n'th significant figure'''
+  # The simplest way to identify significant figures is to represent
+  # a number in scientific notation.
+  #
+  # examples:
+  #
+  # num       sci nota    1st sf    2nd sf
+  #
+  # 1.234  -> 1.234e+0 ->   0     -> +1
+  # 12.34  -> 1.234e+1 ->  -1     ->  0
+  # 0.1234 -> 1.234e-1 ->  +1     -> +2
+
+  fmt = '{:.0e}'
+  coeff,expo = fmt.format( float(v) ).split( 'e' )
+
+  return -int(expo) + n - 1
+
+def sigfig_round( v, n = 2, u = None ):
+  '''Round a number or quantity to given number of significant figures.
+  
+  params:
+    v    the value to round.
+    n    the number of significant figures to round to.
+    u    an uncertainty to round to.
+    
+    if an uncertainty is given, it is rounded to n significant figures and the value v
+    is rounded to the same decimal postion as the result.
+    
+    Notes:
+
+    If v is a measurment, its uncertainty is used for u.
+    '''
+
+  if n < 1:
+    return v
+
+  # need to check for Measurement class first because a Measurement is a Quantity
+  if isinstance( v, pint.measurement._Measurement):
+    nom = nominal(v)
+    unc = uncertainty(v)
+    nom,unc = sigfig_round(nom,n,unc)
+    return UQ_( nom,unc )
+
+  if isinstance( v, pint.quantity._Quantity ):
+    unit  = v.units
+    value = v.magnitude
+    unc   = u.to(unit).magnitude if not u is None else None
+    return Q_( sigfig_round(value,n,unc), unit )
+
+
+  if not u is None:
+    # An uncertainty was given, and we want to round this
+    # uncertainty to the specified number of significant figures
+    # and then round the value to the same decimal position.
+    nd = get_sigfig_decimal_pos( u,n )
+    return type(v)( round(float(v), nd ) ), type(u)( round(float(u), nd ) )
+
+
+
+  # get the decimal position of the n'th sigfig and round
+  nd = get_sigfig_decimal_pos( v,n )
+  return type(v)( round(float(v), nd ) )
+
 def make_UQ( nom, unc ):
   '''Create an uncertain quantity from two quantities'''
   if isinstance( nom, pint.quantity._Quantity ):
@@ -139,74 +203,6 @@ def z( x, y ):
 def agree( x, y ):
   '''Return true if to quantities are statistically the same.'''
   return z(x,y) <= 2.0
-
-
-def get_sigfig_decimal_pos( v, n ):
-  '''Determine the decimal position of the n'th significant figure'''
-  # The simplest way to identify significant figures is to represent
-  # a number in scientific notation.
-  #
-  # examples:
-  #
-  # num       sci nota    1st sf    2nd sf
-  #
-  # 1.234  -> 1.234e+0 ->   0     -> +1
-  # 12.34  -> 1.234e+1 ->  -1     ->  0
-  # 0.1234 -> 1.234e-1 ->  +1     -> +2
-
-  fmt = '{:.0e}'
-  coeff,expo = fmt.format( float(v) ).split( 'e' )
-
-  return -int(expo) + n - 1
-
-
-def sigfig_round( v, n = 2, u = None ):
-  '''Round a number or quantity to given number of significant figures.
-  
-  params:
-    v    the value to round.
-    n    the number of significant figures to round to.
-    u    an uncertainty to round to.
-    
-    if an uncertainty is given, it is rounded to n significant figures and the value v
-    is rounded to the same decimal postion as the result.
-    
-    Notes:
-
-    If v is a measurment, its uncertainty is used for u.
-    '''
-
-  if n < 1:
-    return v
-
-  # need to check for Measurement class first because a Measurement is a Quantity
-  if isinstance( v, pint.measurement._Measurement):
-    nom = nominal(v)
-    unc = uncertainty(v)
-    nom,unc = sigfig_round(nom,n,unc)
-    return UQ_( nom,unc )
-
-  if isinstance( v, pint.quantity._Quantity ):
-    unit  = v.units
-    value = v.magnitude
-    unc   = u.to(unit).magnitude if not u is None else None
-    return Q_( sigfig_round(value,n,unc), unit )
-
-
-  if not u is None:
-    # An uncertainty was given, and we want to round this
-    # uncertainty to the specified number of significant figures
-    # and then round the value to the same decimal position.
-    nd = get_sigfig_decimal_pos( u,n )
-    return type(v)( round(float(v), nd ) ), type(u)( round(float(u), nd ) )
-
-
-
-  # get the decimal position of the n'th sigfig and round
-  nd = get_sigfig_decimal_pos( v,n )
-  return type(v)( round(float(v), nd ) )
-
-
 
 ####################
 # error propagators
@@ -281,9 +277,8 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
   '''An error propagator that automatically propagates error based on a given number of significant figures. For example,
      by default the propagator determines the uncertainy in the result by assuming all input parameters
      have 3 significant figures and the last significant figure is uncertain by plus/minus 1.'''
-  def __init__(self, sigfigs = 3, minerror = False, *args, **kargs):
+  def __init__(self, sigfigs = 3, *args, **kargs):
     self.sigfigs = sigfigs
-    self.minerror = minerror
     super( AutoErrorPropagator, self ).__init__( *args, **kargs )
 
   def propagate_uncertainties(self, *args, **kargs):
@@ -301,14 +296,6 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
 
     value,uncertainties = super( AutoErrorPropagator, self).propagate_uncertainties( *new_args, **new_kargs )
 
-    if self.minerror:
-      # check to see if the uncertainty is less than the number of significant figures.
-      # if so, set it to the last sigfig plus-or-minus 1
-      qq = make_sigfig_UQ( nominal( value ), self.sigfigs )
-      if uncertainty(qq) > self.total_uncertainty( uncertainties ):
-        value = nominal(qq)
-        uncertainties = { 0 : uncertainty(qq) }
-    
     return value, uncertainties
 
 
@@ -323,10 +310,9 @@ def WithUncertainties(func):
   propagator.set_return_uncertainties(True)
   return propagator
 
-def WithAutoError(sigfigs=3, minerror=True):
+def WithAutoError(sigfigs=3):
   propagator = AutoErrorPropagator()
   propagator.sigfigs = sigfigs
-  propagator.minerror = minerror
 
   def Decorator(func):
     propagator.func = func
