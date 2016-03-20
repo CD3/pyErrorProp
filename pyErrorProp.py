@@ -290,8 +290,8 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
 
     new_kargs = dict()
     for k,v in kargs.items():
-      if not isinstance( a, pint.measurement._Measurement ):
-        v = UQ_(v, self.tol*v)
+      if not isinstance( v, pint.measurement._Measurement ):
+        v = make_sigfig_UQ( v, self.sigfigs )
       new_kargs[k] = v
 
     value,uncertainties = super( AutoErrorPropagator, self).propagate_uncertainties( *new_args, **new_kargs )
