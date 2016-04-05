@@ -55,7 +55,12 @@ def uncertainty( x ):
 
 def upper( x ):
   '''Return the upper bound on a quantity (nominal + uncertainty)'''
-  return nominal(x) + uncertainty(x)
+  try:
+    return nominal(x) + uncertainty(x)
+  except:
+    # adding the nominal value and uncertainty will fail for units that have an offset (like temperatures),
+    # if we are here, it is most likely because we have a temperature quantity
+    return Q_(nominal(x).magnitude + uncertainty(x).magnitude, unitsof(x))
 
 def lower( x ):
   '''Return the lower bound on a quantity (nominal - uncertainty)'''
@@ -137,10 +142,18 @@ def make_UQ( nom, unc ):
     u   = nom.units
     nom = nom.magnitude
     if isinstance( unc, pint.quantity._Quantity ):
+      # check if uncertainty is a delta unit
+      if len(unc._get_delta_units()) > 0:
+        # unc is a delta unit, check that it is the correct
+        # unit for nom
+        if unc._has_compatible_delta(str(u)):
+          # it is. convert it to an absolute unit
+          unc = Q_(0,u) + unc
       unc = unc.to(u).magnitude
     else:
+      # TODO: check nom for non-multiplicable units (temperature)
       unc = nom*unc
-
+      
     return UQ_(nom, unc, u)
     
   return UQ_(nom,unc)
