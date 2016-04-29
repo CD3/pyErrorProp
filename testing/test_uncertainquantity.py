@@ -1,13 +1,12 @@
-from UncertainQuantity import *
-import pint
-import numpy
+from pyErrorProp import CorrelationRegistry
+from pyErrorProp.math import *
 import math
 import pytest
 
-units = UR
 
-Q_ = units.Quantity
-UQ_ = UncertainQuantity
+creg = CorrelationRegistry()
+Q_  = creg.Quantity
+UQ_ = creg.UncertainQuantity
 
 def test_properties():
 
