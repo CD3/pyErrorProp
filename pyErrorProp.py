@@ -182,6 +182,7 @@ def get_UQ( data, sigfigs = 2 ):
   if sigfigs > 0:
     q = sigfig_round( q, sigfigs )
   return q
+calc_UQ = get_UQ
 
 make_UQ_ = make_UQ  # for the sake of consistency
 get_UQ_ = get_UQ
