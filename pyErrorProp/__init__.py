@@ -1,2 +1,2 @@
-from .CorrelationRegistry import *
+from .UncertaintyRegistry import *
 from .ErrorPropagator import *

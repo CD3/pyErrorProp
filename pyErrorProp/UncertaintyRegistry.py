@@ -2,7 +2,7 @@ from pint import UnitRegistry
 
 UR = UnitRegistry()
 
-class CorrelationRegistry(object):
+class UncertaintyRegistry(object):
 
   def __init__(self):
 

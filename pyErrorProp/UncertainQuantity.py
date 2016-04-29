@@ -42,6 +42,14 @@ class _UncertainQuantity(object):
                                                                  self._unc.to(self._unit).magnitude,
                                                                  self._unit)
 
+  def to(self,unit):
+    return _UncertainQuantity( self._nom.to(unit), self.unc.to(unit) )
+
+  def ito(self,unit):
+    self._nom.ito(unit)
+    self._unc.ito(unit)
+    self._unit = self._nom.units
+
   # Error Propagation
   def __propagate_error__( self, f, x ):
     nom = f(x.nominal)
