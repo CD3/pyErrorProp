@@ -87,6 +87,24 @@ def test_multiplication():
   assert Close( z.nominal, nx * ny, 0.001 )
   assert Close( z.uncertainty, nx*dy, 0.001 )
 
+
+  # multiplication by a number should also work
+  z = 2 * x
+  assert Close( z.nominal, 2*nx, 0.001 )
+  assert Close( z.uncertainty, dx*2, 0.001 )
+
+  z = x * 2
+  assert Close( z.nominal, 2*nx, 0.001 )
+  assert Close( z.uncertainty, dx*2, 0.001 )
+
+  z = 1.5 * x
+  assert Close( z.nominal, 1.5*nx, 0.001 )
+  assert Close( z.uncertainty, dx*1.5, 0.001 )
+
+  z = x * 1.5
+  assert Close( z.nominal, 1.5*nx, 0.001 )
+  assert Close( z.uncertainty, dx*1.5, 0.001 )
+
 def test_division():
   nx = Q_(1.5,'m')
   dx = Q_(1,'cm')
@@ -114,3 +132,25 @@ def test_division():
   z = nx / y
   assert Close( z.nominal, nz, 0.001 )
   assert Close( z.uncertainty, abs(dzy), 0.001 )
+
+
+  # division by a number should also work
+  z = 2 / x
+  dz = 2/(nx+dx) - 2/nx
+  assert Close( z.nominal, 2/nx, 0.001 )
+  assert Close( z.uncertainty, abs(dz), 0.001 )
+
+  z = x / 2
+  dz = (nx+dx)/2 - nx/2
+  assert Close( z.nominal, nx/2, 0.001 )
+  assert Close( z.uncertainty, abs(dz), 0.001 )
+
+  z = 1.5 / x
+  dz = 1.5/(nx+dx) - 1.5/nx
+  assert Close( z.nominal, 1.5/nx, 0.001 )
+  assert Close( z.uncertainty, abs(dz), 0.001 )
+
+  z = x / 1.5
+  dz = (nx+dx)/1.5 - nx/1.5
+  assert Close( z.nominal, nx/1.5, 0.001 )
+  assert Close( z.uncertainty, abs(dz), 0.001 )
