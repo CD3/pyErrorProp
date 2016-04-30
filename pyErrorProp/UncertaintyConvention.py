@@ -1,3 +1,4 @@
+import pint
 from pint import UnitRegistry
 from ErrorPropagator import PositiveIntervalPropagator
 
@@ -9,21 +10,23 @@ class UncertaintyConvention(object):
   def __init__(self):
     self._UNITREGISTRY = UR
     self.UncertainQuantity = build_uncertainquantity_class(self, self._UNITREGISTRY)
-    self.Quantity = self.UncertainQuantity.Quantity
     self.ErrorPropagator = EP()
 
-    # we need to modify the quantity magic functions to return NotImplemented on
-    # errors so that the UncertainQuantity __r* methods can take over.
-    def disable_exceptions(f):
+    # we need to modify the quantity magic functions to return NotImplemented if
+    # the other type is an uncertain quantity so that the UncertainQuantity __r* methods can take over.
+    UQ_ = self.UncertainQuantity
+    def disable_for_UQ(f):
       def new_f(self,other):
-        try:
-          return f(self, other)
-        except:
+        if type(other) is UQ_:
           return NotImplemented
+        return f(self, other)
 
       return new_f
 
-    self.Quantity.__add__ = disable_exceptions( self.Quantity.__add__ )
+    self.UncertainQuantity.Quantity.__add__ = disable_for_UQ( self.UncertainQuantity.Quantity.__add__ )
+    self.UncertainQuantity.Quantity.__sub__ = disable_for_UQ( self.UncertainQuantity.Quantity.__sub__ )
+    self.UncertainQuantity.Quantity.__mul__ = disable_for_UQ( self.UncertainQuantity.Quantity.__mul__ )
+    self.UncertainQuantity.Quantity.__div__ = disable_for_UQ( self.UncertainQuantity.Quantity.__div__ )
 
   def propagate_error(self, f, args, kwargs = {}):
     '''Propagates error through a function.'''

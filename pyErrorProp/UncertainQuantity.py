@@ -4,7 +4,6 @@ class _UncertainQuantity(object):
   '''A quantity with uncertainty.'''
 
   def __init__( self, nom, unc, unit = ''):
-
     if not isinstance( nom, self.Quantity ):
       nom = self.Quantity( nom, unit )
 
@@ -15,6 +14,13 @@ class _UncertainQuantity(object):
     self._unc = unc
 
     self._unit = self._nom.units
+
+  def make(self,*args,**kwargs):
+    '''Create an instance of the class, using the uncertainty convension if necessary.'''
+    try:
+      return self._CONVENTION.UncertainQuantity(*args,**kwargs)
+    except:
+      return _UncertainQuantity(*args,**kwargs)
 
 
   @property
@@ -39,24 +45,49 @@ class _UncertainQuantity(object):
   def interval(self):
     return 2*self.uncertainty
 
+
+
   def __repr__(self):
       return "<UncertainQauntity({0:.2f}, {1:.2f}, {2})>".format(self._nom.to(self._unit).magnitude,
                                                                  self._unc.to(self._unit).magnitude,
                                                                  self._unit)
 
   def to(self,unit):
-    return _UncertainQuantity( self._nom.to(unit), self.unc.to(unit) )
+    return self.make( self._nom.to(unit), self._unc.to(unit) )
 
   def ito(self,unit):
     self._nom.ito(unit)
     self._unc.ito(unit)
     self._unit = self._nom.units
 
+  def __neg__(self):
+    return self.make( -self._nom, self._unc )
+
   def __add__(self,other):
     return self._CONVENTION.propagate_error( operator.__add__, (self,other) )
 
-  def __radd__(self,other):
-    return self._CONVENTION.propagate_error( operator.__add__, (self,other) )
+  __radd__ = __add__
+
+  def __sub__(self,other):
+    return self._CONVENTION.propagate_error( operator.__sub__, (self,other) )
+
+  def __rsub__(self,other):
+    return -self.__sub__(other)
+
+  def __mul__(self,other):
+    return self._CONVENTION.propagate_error( operator.__mul__, (self,other) )
+
+  def __rmul__(self,other):
+    return self._CONVENTION.propagate_error( operator.__mul__, (other,self) )
+
+  def __div__(self,other):
+    return self._CONVENTION.propagate_error( operator.__div__, (self,other) )
+
+  def __rdiv__(self,other):
+    return self._CONVENTION.propagate_error( operator.__div__, (other,self) )
+
+
+
 
 
 

@@ -40,10 +40,77 @@ def test_addition():
 
 
 def test_subtraction():
-  pass
+  nx = Q_(1.5,'m')
+  dx = Q_(1,'cm')
+  x = UQ_( nx, dx )
+
+  ny = Q_(3.3,'m')
+  dy = Q_(2,'cm')
+  y = UQ_( ny, dy )
+
+  # check that two uncertain quantities can be subtracted
+  z = x - y
+  assert Close( z.nominal, nx - ny, 0.001 )
+  assert Close( z.uncertainty, (dx**2 + dy**2)**0.5, 0.001 )
+
+  # check that a quantity can be subtracted from an uncertain quantity
+  z = x - ny
+  assert Close( z.nominal, nx - ny, 0.001 )
+  assert Close( z.uncertainty, dx, 0.001 )
+
+  # check that an uncertain quantity can be subtracted from a quantity
+  z = nx - y
+  assert Close( z.nominal, nx - ny, 0.001 )
+  assert Close( z.uncertainty, dy, 0.001 )
 
 def test_multiplication():
-  pass
+  nx = Q_(1.5,'m')
+  dx = Q_(1,'cm')
+  x = UQ_( nx, dx )
+
+  ny = Q_(3.3,'m')
+  dy = Q_(2,'cm')
+  y = UQ_( ny, dy )
+
+  # check that two uncertain quantities can be multiplied
+  z = x * y
+  assert Close( z.nominal, nx * ny, 0.001 )
+  assert Close( z.uncertainty, ((ny*dx)**2 + (nx*dy)**2)**0.5, 0.001 )
+
+  # check that an uncertain quantity can be multiplied by a quantity
+  z = x * ny
+  assert Close( z.nominal, nx * ny, 0.001 )
+  assert Close( z.uncertainty, ny*dx, 0.001 )
+
+  # check that a quantity can be multiplied by an uncertain quantity
+  z = nx * y
+  assert Close( z.nominal, nx * ny, 0.001 )
+  assert Close( z.uncertainty, nx*dy, 0.001 )
 
 def test_division():
-  pass
+  nx = Q_(1.5,'m')
+  dx = Q_(1,'cm')
+  x = UQ_( nx, dx )
+
+  ny = Q_(3.3,'m')
+  dy = Q_(2,'cm')
+  y = UQ_( ny, dy )
+
+  nz  = nx/ny
+  dzx = (nx + dx)/ny - nx/ny
+  dzy = nx/(ny+dy) - nx/ny
+
+  # check that two uncertain quantities can be divided
+  z = x / y
+  assert Close( z.nominal, nz,  0.001 )
+  assert Close( z.uncertainty, (dzx**2 + dzy**2)**0.5, 0.001 )
+
+  # check that an uncertain quantity can be divided by a quantity
+  z = x / ny
+  assert Close( z.nominal, nz, 0.001 )
+  assert Close( z.uncertainty, abs(dzx), 0.001 )
+
+  # check that a quantity can be subtracted from an uncertain quantity
+  z = nx / y
+  assert Close( z.nominal, nz, 0.001 )
+  assert Close( z.uncertainty, abs(dzy), 0.001 )

@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 import math
-from .UncertaintyRegistry import UR
+from .UncertaintyConvension import UC
 
 add_quantity_support = UR.wraps
 add_uncertainquantity_support = 
