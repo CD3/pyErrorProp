@@ -21,3 +21,9 @@ def test_conversions():
   assert x.uncertainty == Q_(1,'cm').to('ft')
   assert x.upper       == Q_(1.01,'m').to('ft')
   assert x.lower       == Q_(0.99,'m').to('ft')
+
+def test_decimal_support():
+  x = UQ_( Q_('1.50','m'), Q_('0.03','m') )
+  y = UQ_( Q_(1.50,'m'), Q_(0.03,'m') )
+
+
