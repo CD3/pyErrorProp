@@ -64,27 +64,27 @@ class _UncertainQuantity(object):
     return self.make( -self._nom, self._unc )
 
   def __add__(self,other):
-    return self._CONVENTION.propagate_error( operator.__add__, (self,other) )
+    return self._CONVENTION.__propagate_error__( operator.__add__, (self,other) )
 
   __radd__ = __add__
 
   def __sub__(self,other):
-    return self._CONVENTION.propagate_error( operator.__sub__, (self,other) )
+    return self._CONVENTION.__propagate_error__( operator.__sub__, (self,other) )
 
   def __rsub__(self,other):
     return -self.__sub__(other)
 
   def __mul__(self,other):
-    return self._CONVENTION.propagate_error( operator.__mul__, (self,other) )
+    return self._CONVENTION.__propagate_error__( operator.__mul__, (self,other) )
 
   def __rmul__(self,other):
-    return self._CONVENTION.propagate_error( operator.__mul__, (other,self) )
+    return self._CONVENTION.__propagate_error__( operator.__mul__, (other,self) )
 
   def __div__(self,other):
-    return self._CONVENTION.propagate_error( operator.__div__, (self,other) )
+    return self._CONVENTION.__propagate_error__( operator.__div__, (self,other) )
 
   def __rdiv__(self,other):
-    return self._CONVENTION.propagate_error( operator.__div__, (other,self) )
+    return self._CONVENTION.__propagate_error__( operator.__div__, (other,self) )
 
 
 

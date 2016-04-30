@@ -28,7 +28,7 @@ class UncertaintyConvention(object):
     self.UncertainQuantity.Quantity.__mul__ = disable_for_UQ( self.UncertainQuantity.Quantity.__mul__ )
     self.UncertainQuantity.Quantity.__div__ = disable_for_UQ( self.UncertainQuantity.Quantity.__div__ )
 
-  def propagate_error(self, f, args, kwargs = {}):
+  def __propagate_error__(self, f, args, kwargs = {}):
     '''Propagates error through a function.'''
     self.ErrorPropagator.func = f
 
@@ -38,7 +38,7 @@ class UncertaintyConvention(object):
 
     return self.UncertainQuantity(*r)
 
-  def round( self, uq ):
+  def __round__( self, uq ):
     '''Round an uncertain quantity.'''
     return uq
 

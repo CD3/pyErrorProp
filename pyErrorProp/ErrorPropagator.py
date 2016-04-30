@@ -1,13 +1,21 @@
 import copy
 
+
+# utility functions
+
 def nominal( x ):
   '''Return the nominal value of an uncertainty quantity.
      This free function allows multiple uncertain quantity types to be supported
      in a generic way.'''
   try:
+    # UncertainQuantity support
     return x.nominal
   except AttributeError:
-    return x
+    try:
+      # pint.Measurement support
+      return x.value
+    except AttributeError:
+      return x
 
 def uncertainty( x ):
   '''Returns the uncertainty of an uncertain quantity.
@@ -16,7 +24,10 @@ def uncertainty( x ):
   try:
     return x.uncertainty
   except AttributeError:
-    return 0
+    try:
+      return x.error
+    except AttributeError:
+      return 0
 
 def upper( x ):
   '''Returns the upper extreme of an uncertain quantity.
@@ -25,7 +36,10 @@ def upper( x ):
   try:
     return x.upper
   except:
-    return x
+    try:
+      return x.value + x.error
+    except:
+      return x
 
 def lower( x ):
   '''Returns the lower extreme of an uncertain quantity.
@@ -34,7 +48,10 @@ def lower( x ):
   try:
     return x.lower
   except:
-    return x
+    try:
+      return x.value - x.error
+    except:
+      return x
 
 
 
@@ -137,14 +154,14 @@ class PositiveIntervalPropagator( ErrorPropagator ):
 
     # return value, uncertainties
 
-# def WithError(func):
-  # propagator = PositiveIntervalPropagator()
-  # propagator.set_func( func )
-  # return propagator
+def WithError(func):
+  propagator = PositiveIntervalPropagator()
+  propagator.func = func
+  return propagator
 
 # def WithUncertainties(func):
   # propagator = PositiveIntervalPropagator()
-  # propagator.set_func( func )
+  # propagator.func = func
   # propagator.set_return_uncertainties(True)
   # return propagator
 
@@ -163,7 +180,7 @@ class PositiveIntervalPropagator( ErrorPropagator ):
     # return WithError
 
   # def Decorator(func):
-    # propagator.set_func( func )
+    # propagator.func = func
     # return propagator
 
   # return Decorator
