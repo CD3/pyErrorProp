@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 import math
-from .CorrelationRegistry import UR
+from .UncertaintyRegistry import UR
+
+add_quantity_support = UR.wraps
+add_uncertainquantity_support = 
 
 # add unit support to math functions
 sin  = UR.wraps( UR(""), UR("radian") )(math.sin)

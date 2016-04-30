@@ -1,8 +1,8 @@
-from pyErrorProp import UncertaintyRegistry
+from pyErrorProp import UncertaintyConvention
 import pytest
 
-uncreg = UncertaintyRegistry()
-UQ_ = uncreg.UncertainQuantity
+uconv = UncertaintyConvention()
+UQ_ = uconv.UncertainQuantity
 Q_ = UQ_.Quantity
 
 def test_properties():
