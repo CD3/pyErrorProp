@@ -1,4 +1,4 @@
-import operator
+import operator, re, decimal
 
 class _UncertainQuantity(object):
   '''A quantity with uncertainty.'''
@@ -52,26 +52,69 @@ class _UncertainQuantity(object):
                                                                  self._unc.to(self._unit).magnitude,
                                                                  self._unit)
 
-  def __format__(self, fmtstr):
+  def __format__(self, fmtspec):
+    # see if formatting is handled by the uncertainty convention
+    try:
+      return self._CONVENTION.__format_uncertainquantity__(self,fmtspec)
+    except:
+      pass
 
-    # handle special cases
+    # An uncertain quantity should be formatted so that the
+    # nominal value matches the decimal position of the uncertainty.
+    # We interpret the precision spec in the format string to be the 
+    # number of significant figures that should be displayed in the uncertainty.
+    # The nominal value's precision will set to match
+    # the uncertainties.
+    psre = re.compile('\.([0-9]+)')
 
-    # the LaTeX siunitx formatter
-    if 'Lx' in fmtstr:
-      # we are going to use pint to format the latex. all we need to do is format the
-      # numerical portion that will be put into the first argument of \SI command
-      # remove Lx from the format string
-      fmtstr = fmtstr.replace('Lx','')
-      # format the numerical portion
-      num = ('{:%s} +- {:%s}'%(fmtstr,fmtstr)).format(self.nominal.to(self._unit).magnitude,self.uncertainty.to(self._unit).magnitude)
-      # get the \SI command to put the numerical portion into
-      tmpl = '{:Lx}'.format( self.Quantity( '%s', self._unit ) )
-      # now sliiiiide it in...
-      r = tmpl%num
-      # and return
-      return r
+    # get precision from spec (if it exists)
+    match = psre.search( fmtspec )
+    prec_given = False
+    prec = 1
+    if match:
+      prec_given = True
+      prec = match.group(1)
+    prec = int(prec)
+    prec -= 1
+    if prec < 0:
+      prec = 0
 
-    return ('{:%s} +/- {:%s}'%(fmtstr,fmtstr)).format(self.nominal,self.uncertainty)
+    # we'll use the Decimal class to do the heavy lifting
+    nom = decimal.Decimal( self.nominal.magnitude )
+    # round uncertainty to correct number of sigfigs
+    unc = decimal.Decimal( self.uncertainty.magnitude )
+    if prec_given == False and prec == 0 and ('{:e}'.format(unc))[0] == '1':
+      # special case: if leading significant figure is 1, then take two
+      prec += 1
+    unc = ('{:.%de}'%prec).format(unc)
+    unc = decimal.Decimal(unc)
+    # now round nominal value to same decimal position
+    nom = nom.quantize(unc)
+
+    # now we can remove the precision spec
+    fmtspec = psre.sub( '', fmtspec )
+
+
+    # use pint to format the units.
+    # create a quantity with a string replacement (%s) as a magnitude.
+    tmpl = '{:Lx}'.format( self.Quantity( '%s', self._unit ) )
+
+    # now tmpl has the units formatted. all we have to do is format the
+    # value and insert it into tmpl
+
+    # format the value
+    sepstr = ' +/- '
+    if 'Lx' in fmtspec:
+      fmtspec = fmtspec.replace('Lx','')
+      sepstr = ' +- '
+
+    valstr = ('{:%s}%s{:%s}'%(fmtspec,sepstr,fmtspec)).format(nom,unc)
+    
+    ret = tmpl % valstr
+
+    return ret
+
+
 
 
   def to(self,unit):
