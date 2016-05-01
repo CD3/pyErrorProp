@@ -27,3 +27,10 @@ def test_decimal_support():
   y = UQ_( Q_(1.50,'m'), Q_(0.03,'m') )
 
 
+def test_formatted_output():
+
+  x = UQ_( Q_('1.50','m'), Q_('7','cm') )
+
+  xstr = '{:Lx}'.format(x)
+
+  assert xstr == r'\SI[]{1.50 +- 0.07}{\meter}'

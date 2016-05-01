@@ -52,6 +52,28 @@ class _UncertainQuantity(object):
                                                                  self._unc.to(self._unit).magnitude,
                                                                  self._unit)
 
+  def __format__(self, fmtstr):
+
+    # handle special cases
+
+    # the LaTeX siunitx formatter
+    if 'Lx' in fmtstr:
+      # we are going to use pint to format the latex. all we need to do is format the
+      # numerical portion that will be put into the first argument of \SI command
+      # remove Lx from the format string
+      fmtstr = fmtstr.replace('Lx','')
+      # format the numerical portion
+      num = ('{:%s} +- {:%s}'%(fmtstr,fmtstr)).format(self.nominal.to(self._unit).magnitude,self.uncertainty.to(self._unit).magnitude)
+      # get the \SI command to put the numerical portion into
+      tmpl = '{:Lx}'.format( self.Quantity( '%s', self._unit ) )
+      # now sliiiiide it in...
+      r = tmpl%num
+      # and return
+      return r
+
+    return ('{:%s} +/- {:%s}'%(fmtstr,fmtstr)).format(self.nominal,self.uncertainty)
+
+
   def to(self,unit):
     return self.make( self._nom.to(unit), self._unc.to(unit) )
 

@@ -36,7 +36,10 @@ class UncertaintyConvention(object):
     def wrap(f):
       def new_f(cls,value,units=None):
         if isinstance(value,(str,unicode)):
-          value = decimal.Decimal(value)
+          try:
+            value = decimal.Decimal(value)
+          except:
+            pass
         return f(cls,value,units)
 
       return new_f
