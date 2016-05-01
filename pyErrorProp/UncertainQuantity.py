@@ -1,4 +1,5 @@
 import operator, re, decimal
+import pint
 
 class _UncertainQuantity(object):
   '''A quantity with uncertainty.'''
@@ -54,21 +55,40 @@ class _UncertainQuantity(object):
 
   def __format__(self, fmtspec):
     # see if formatting is handled by the uncertainty convention
+    # so that the user can overload it if they want.
     try:
       return self._CONVENTION.__format_uncertainquantity__(self,fmtspec)
     except:
       pass
 
-    # An uncertain quantity should be formatted so that the
-    # nominal value matches the decimal position of the uncertainty.
-    # We interpret the precision spec in the format string to be the 
-    # number of significant figures that should be displayed in the uncertainty.
-    # The nominal value's precision will set to match
-    # the uncertainties.
-    psre = re.compile('\.([0-9]+)')
 
-    # get precision from spec (if it exists)
-    match = psre.search( fmtspec )
+    # An uncertain quantity should be formatted so that the
+    # nominal value matches the decimal position of the uncertainty (Taylor, 1997).
+    #
+    # In general, the uncertainty should be rounded to 1 significant figure when displayed (Taylor, 1997).
+    #
+    # However, if the leading significant figure is '1', two significant figures may be retained (Taylor, 1997).
+    #
+    # So, for an uncertain quantity, we interpret the precision spec in the format string to be the 
+    # number of significant figures that should be displayed in the uncertainty, rather than the number
+    # of figures after the decimal point. The nominal value's precision will set to match
+    # the uncertainties.
+    #
+    #
+    # Pint already handles formatting of units (and does a nice job), so we just need to format the value portion.
+    # 
+
+
+
+    # split the format spec into its value specific and unit specific parts
+    v_fmtspec = fmtspec.replace('Lx','')
+    v_fmtspec = pint.formatting.remove_custom_flags(v_fmtspec)
+    u_fmtspec = fmtspec.replace(v_fmtspec,'')
+
+
+    # determine the precision
+    psre = re.compile('\.([0-9]+)')
+    match = psre.search( v_fmtspec )
     prec_given = False
     prec = 1
     if match:
@@ -79,36 +99,38 @@ class _UncertainQuantity(object):
     if prec < 0:
       prec = 0
 
-    # we'll use the Decimal class to do the heavy lifting
+    # Rounding based on sigfigs is a little tricky. None of the builtin rounding
+    # functions round based on sigfigs. The simplest way to round to a given sigfig
+    # is to get a scientific representation of the number, then the first digit displayed
+    # is significant. If we want to display the number in fixed decimal representation, then
+    # we have to figure out what precision (places after decimal) corresponds to the given
+    # significant figure.
+    # 
+    # Rather than handle all of this manually, we'll use the Decimal class.
     nom = decimal.Decimal( self.nominal.magnitude )
-    # round uncertainty to correct number of sigfigs
     unc = decimal.Decimal( self.uncertainty.magnitude )
     if prec_given == False and prec == 0 and ('{:e}'.format(unc))[0] == '1':
       # special case: if leading significant figure is 1, then take two
       prec += 1
-    unc = ('{:.%de}'%prec).format(unc)
-    unc = decimal.Decimal(unc)
-    # now round nominal value to same decimal position
+    unc = ('{:.%de}'%prec).format(unc) # a string rounded to the correct number of sigfigs
+    unc = decimal.Decimal(unc)         # back to a decimal
     nom = nom.quantize(unc)
-
     # now we can remove the precision spec
-    fmtspec = psre.sub( '', fmtspec )
+    # precision will be handled by the Decimal class
+    v_fmtspec = psre.sub( '', v_fmtspec )
 
 
-    # use pint to format the units.
-    # create a quantity with a string replacement (%s) as a magnitude.
-    tmpl = '{:Lx}'.format( self.Quantity( '%s', self._unit ) )
+    # Use pint to create a template string with the units already formatted
+    # by creatign a quantity with a string replacement (%s) as a magnitude.
+    tmpl = ('{:'+u_fmtspec+'}').format( self.Quantity( '%s', self._unit ) )
 
-    # now tmpl has the units formatted. all we have to do is format the
-    # value and insert it into tmpl
 
-    # format the value
+    # Format the value
     sepstr = ' +/- '
-    if 'Lx' in fmtspec:
-      fmtspec = fmtspec.replace('Lx','')
+    if 'Lx' in u_fmtspec:
       sepstr = ' +- '
 
-    valstr = ('{:%s}%s{:%s}'%(fmtspec,sepstr,fmtspec)).format(nom,unc)
+    valstr = ('{:%s}%s{:%s}'%(v_fmtspec,sepstr,v_fmtspec)).format(nom,unc)
     
     ret = tmpl % valstr
 

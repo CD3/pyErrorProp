@@ -73,4 +73,14 @@ def test_formatted_output():
   assert xstr == r'\SI[]{9.8765 +- 0.0123}{\meter}'
 
 
+  xstr = '{:f}'.format(x)
+  assert xstr == r'9.877 +/- 0.012 meter'
+
+
+
+
+  x = UQ_( Q_(9.87654321,'m'), Q_(1.2345,'cm') )
+
+  xstr = '{:f}'.format(x)
+  assert xstr == r'9.877 +/- 0.012 meter'
 
