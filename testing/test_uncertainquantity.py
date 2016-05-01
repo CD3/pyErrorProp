@@ -1,9 +1,35 @@
 from pyErrorProp import UncertaintyConvention
+import pint
 import pytest
 
 uconv = UncertaintyConvention()
 UQ_ = uconv.UncertainQuantity
 Q_ = UQ_.Quantity
+
+def Close( a, b, tol = 0.01 ):
+    if isinstance(a,int):
+        a = float(a)
+    if isinstance(b,int):
+        b = float(b)
+    return (a - b)**2 / (a**2 + b**2) < 4*tol*tol
+
+def test_construction():
+  x = UQ_( Q_(2,'m/s'), Q_(0.5,'cm/s') )
+
+  assert Close( x.nominal.magnitude, 2 )
+  assert Close( x.uncertainty.magnitude, 0.005 )
+
+
+  x = UQ_( '2 +/- 0.2 m/s' )
+
+  assert Close( x.nominal.magnitude, 2 )
+  assert Close( x.uncertainty.magnitude, 0.2 )
+
+
+  x = UQ_( '2 m/s +/- 1%' )
+
+  assert Close( x.nominal.magnitude, 2 )
+  assert Close( x.uncertainty.magnitude, 0.02 )
 
 def test_properties():
   x = UQ_( Q_(1,'m'), Q_(1,'cm') )
@@ -83,4 +109,34 @@ def test_formatted_output():
 
   xstr = '{:f}'.format(x)
   assert xstr == r'9.877 +/- 0.012 meter'
+
+
+def test_string_parsing():
+
+  t = UQ_.parse_string("1.0 +/- 0.01 m")
+  assert t[0] == '1.0 m'
+  assert t[1] == '0.01 m'
+
+  t = UQ_.parse_string("1.0   +/- 0.01 m")
+  assert t[0] == '1.0 m'
+  assert t[1] == '0.01 m'
+
+  t = UQ_.parse_string("1.0 m +/- 1 cm")
+  assert t[0] == '1.0 m'
+  assert t[1] == '1 cm'
+
+  t = UQ_.parse_string("1.0 m +/- 0.01")
+  assert t[0] == '1.0 m'
+  assert t[1] == '0.01'
+
+  t = UQ_.parse_string("1.0 m +/- 1%")
+  assert t[0] == '1.0 m'
+  assert t[1] == '1%'
+
+def test_errors():
+  with pytest.raises(pint.errors.DimensionalityError):
+    x = UQ_( Q_(1,'m'), Q_(0.1,'s') )
+
+  with pytest.raises(pint.errors.DimensionalityError):
+    x = UQ_( '1 m +/- 0.1 s' )
 

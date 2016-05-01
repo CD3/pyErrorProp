@@ -1,15 +1,45 @@
 import operator, re, decimal
 import pint
 
+ureg = pint.UnitRegistry()
+
 class _UncertainQuantity(object):
   '''A quantity with uncertainty.'''
 
-  def __init__( self, nom, unc, unit = ''):
+  _REGISTRY = ureg
+  Quantity = _REGISTRY.Quantity
+
+  def __init__( self, nom, unc = None, unit = None):
+
+    if unc is None and unit is None and isinstance(nom,(str,unicode)):
+      nom,unc = _UncertainQuantity.parse_string( nom )
+
     if not isinstance( nom, self.Quantity ):
-      nom = self.Quantity( nom, unit )
+      if unit is None:
+        nom = self.Quantity( nom )
+      else:
+        nom = self.Quantity( nom, unit )
 
     if not isinstance( unc, self.Quantity ):
-      nom = self.Quantity( unc, unit )
+      # support for % sign in unit
+      if isinstance(unc,(str,unicode)):
+        unc = unc.replace('%','percent')
+      if unit is None:
+        unc = self.Quantity( unc )
+      else:
+        unc = self.Quantity( unc, unit )
+
+    # make sure units on unc and nom are compatible
+    try:
+      tmp = nom + unc
+    except Exception as e:
+      try:
+        unc = nom*unc.to('')
+        tmp = nom + unc
+      except:
+        e.extra_msg = " Nominal value and uncertainty do not have compatible types."
+        raise e
+
       
     self._nom = nom
     self._unc = unc
@@ -135,6 +165,42 @@ class _UncertainQuantity(object):
     ret = tmpl % valstr
 
     return ret
+
+  @staticmethod
+  def parse_string(text):
+    text = text.replace("+/-", "+-")
+    text = text.replace("+-", "|")
+
+    tok = text.split('|')
+    nom = tok[0]
+    unc = tok[1] if len(tok) > 1 else "0"
+
+    # check for units
+    nomv = nom
+    nomu = ''
+    nomt = nom.split()
+    if len(nomt)>1:
+      nomv = nomt[0]
+      nomu = nomt[1]
+
+    uncv = unc
+    uncu = ''
+    unct = unc.split()
+    if len(unct)>1:
+      uncv = unct[0]
+      uncu = unct[1]
+
+    if nomu == '':
+      nomu = uncu
+
+    nom = '%s %s'%(nomv,nomu)
+    unc = '%s %s'%(uncv,uncu)
+
+    # remove extra spaces
+    nom = re.sub('\s+',' ',nom.strip())
+    unc = re.sub('\s+',' ',unc.strip())
+
+    return (nom,unc)
 
 
 
