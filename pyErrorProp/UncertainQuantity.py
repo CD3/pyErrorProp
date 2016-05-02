@@ -78,7 +78,7 @@ class _UncertainQuantity(object):
     return 2*self.uncertainty
 
 
-  def correlated( self, var, corr = None, return_None = True ):
+  def correlated( self, var, corr = None, return_None = True, bidirectional = True ):
     '''Get/set the correlation between another variable.'''
 
     if self._corr == None:
@@ -90,6 +90,9 @@ class _UncertainQuantity(object):
       return self._corr.get( key, None if return_None else 0 )
 
     self._corr[key] = corr
+
+    if bidirectional:
+      var.correlated(self,corr,bidirectional=False)
 
 
   def __repr__(self):

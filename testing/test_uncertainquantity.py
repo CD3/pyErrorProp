@@ -161,8 +161,11 @@ def test_correlation():
   y = UQ_( '1 m +/- 2 cm' )
   z = UQ_( '-1 m +/- 2 cm' )
 
-  x.correlated(y,1)
-  x.correlated(z,1)
+  x.correlated(y, 0.8)
+  x.correlated(z,-0.8,bidirectional=False)
 
-  assert x.correlated(y) == 1
+  assert x.correlated(y) == 0.8
+  assert y.correlated(x) == 0.8
+  assert x.correlated(z) == -0.8
+  assert z.correlated(x) is None
 
