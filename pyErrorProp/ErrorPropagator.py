@@ -69,10 +69,19 @@ class ErrorPropagator(object):
     else:
       uncs = uncertainties.values()
 
+    if corelations is None:
+      return sum( [ x*x for x in uncs ] )**0.5
+
     if isinstance( correlations, bool ) and correlations:
       return sum( uncs )
     else:
-      return sum( [ x*x for x in uncs ] )**0.5
+      sum = 0
+      N = len(uncs)
+      for i in range(N):
+        for j in range(N):
+          sum += correlations(i,j) * uncs[i] * uncs[j]
+      return sum**0.5
+
 
   def __call__(self, *args, **kargs):
     return self.propagate_uncertainties(self.func, *args, **kargs)

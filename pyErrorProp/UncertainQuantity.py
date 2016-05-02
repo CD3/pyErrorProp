@@ -87,6 +87,9 @@ class _UncertainQuantity(object):
     key = id(var)
 
     if corr is None:
+      if self is var:
+        return 1
+
       return self._corr.get( key, None if return_None else 0 )
 
     self._corr[key] = corr
