@@ -31,13 +31,35 @@ class UncertaintyConvention(object):
        2. If the uncertainty's first significant figure is 1, it should be rounded to two significant figures.
        3. The nominal value should be rounded to the same decimal position as the uncertainty.
     '''
-
-
     return uq
 
   def __eq__( self, uq ):
     '''Compare two uncertain quantities.'''
     return False
+
+  def calc_UncertainQuantity( self, data, round = False ):
+    '''Computes an uncertain quantity from a data set (computes the standard error)'''
+    nominal = sum( data ) / len(data)
+    std_dev = ( sum( [ (x - nominal)**2 for x in data ] ) / len(data) )**0.5 # Note: using the 'biased' estimate
+    std_err = std_dev /len( data )**0.5
+
+    q = self.UncertainQuantity( nominal, std_err )
+    if round:
+      q = self.round( q )
+
+    return q
+
+  calc_UQ = calc_UncertainQuantity
+
+  def WithError(self):
+    pass
+
+
+
+
+
+
+
 
 
 

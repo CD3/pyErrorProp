@@ -2,6 +2,8 @@ from __future__ import absolute_import
 import math
 from .UncertaintyConvension import UC
 
+# @todo wrapper for functions that asks the argument for an implementation.
+
 add_quantity_support = UR.wraps
 add_uncertainquantity_support = 
 

@@ -154,3 +154,29 @@ def test_division():
   dz = (nx+dx)/1.5 - nx/1.5
   assert Close( z.nominal, nx/1.5, 0.001 )
   assert Close( z.uncertainty, abs(dz), 0.001 )
+
+def test_sum():
+
+  data = [ UQ_( 1, 0.1, 'm' )
+         , UQ_( 2, 0.2, 'm' )
+         , UQ_( 3, 0.3, 'm' )
+         ]
+
+  x = sum( data )
+
+  assert Close( x.nominal.magnitude    , 6 )
+  assert Close( x.uncertainty.magnitude, (0.1**2 + 0.2**2 + 0.3**2)**0.5 )
+
+
+  data = [ UQ_( 1, 0.1, 'm' )
+         , -UQ_( 2, 0.2, 'm' )
+         , UQ_( 3, 0.3, 'm' )
+         ]
+
+  x = sum( data )
+
+  assert Close( x.nominal.magnitude    , 2 )
+  assert Close( x.uncertainty.magnitude, (0.1**2 + 0.2**2 + 0.3**2)**0.5 )
+
+
+
