@@ -9,7 +9,7 @@ class _UncertainQuantity(object):
   _REGISTRY = ureg
   Quantity = _REGISTRY.Quantity
 
-  def __init__( self, nom, unc = None, unit = None):
+  def __init__( self, nom, unc = None, unit = None, corr = None):
 
     if unc is None and unit is None and isinstance(nom,(str,unicode)):
       nom,unc = _UncertainQuantity.parse_string( nom )
@@ -43,6 +43,7 @@ class _UncertainQuantity(object):
       
     self._nom = nom
     self._unc = unc
+    self._corr = corr
 
     self._unit = self._nom.units
 
@@ -76,6 +77,19 @@ class _UncertainQuantity(object):
   def interval(self):
     return 2*self.uncertainty
 
+
+  def correlated( self, var, corr = None, return_None = True ):
+    '''Get/set the correlation between another variable.'''
+
+    if self._corr == None:
+      self._corr = {}
+
+    key = id(var)
+
+    if corr is None:
+      return self._corr.get( key, None if return_None else 0 )
+
+    self._corr[key] = corr
 
 
   def __repr__(self):

@@ -154,3 +154,15 @@ def test_comparisons():
   assert not (y >  x)
   assert     (z >  x)
 
+
+def test_correlation():
+
+  x = UQ_( '1 m +/- 2 cm' )
+  y = UQ_( '1 m +/- 2 cm' )
+  z = UQ_( '-1 m +/- 2 cm' )
+
+  x.correlated(y,1)
+  x.correlated(z,1)
+
+  assert x.correlated(y) == 1
+
