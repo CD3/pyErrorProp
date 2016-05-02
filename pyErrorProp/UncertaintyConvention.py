@@ -10,8 +10,9 @@ EP = PositiveIntervalPropagator
 
 class UncertaintyConvention(object):
 
-  def __init__(self, _UR = UR):
+  def __init__(self, _UR = UR, _EP = EP):
     self._UNITREGISTRY = _UR
+    self._ERRORPROPAGATOR = _EP
     self.UncertainQuantity = build_uncertainquantity_class(self, self._UNITREGISTRY)
     self.ErrorPropagator = EP()
 
@@ -69,8 +70,11 @@ class UncertaintyConvention(object):
 
   calc_UQ = calc_UncertainQuantity
 
-  def WithError(self):
-    pass
+  def WithError(self,func):
+    def wrapper(*args,**kwargs):
+      return self.UncertainQuantity( *self.ErrorPropagator.propagate_uncertainties( func, *args, **kwargs ) )
+
+    return wrapper
 
 
 

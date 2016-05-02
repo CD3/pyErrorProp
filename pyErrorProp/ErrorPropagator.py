@@ -75,8 +75,10 @@ class ErrorPropagator(object):
       return sum( [ x*x for x in uncs ] )**0.5
 
   def __call__(self, *args, **kargs):
-    
-    nominal_value, uncertainties = self.propagate_uncertainties( *args, **kargs )
+    return self.propagate_uncertainties(self.func, *args, **kargs)
+
+  def propagate_uncertainties(self, func, *args, **kargs):
+    nominal_value, uncertainties = self.__propagate_uncertainties__( func, *args, **kargs )
     uncertainty   = self.total_uncertainty( uncertainties )
     if self.return_all_uncertainties:
       return ( nominal_value, uncertainty, uncertainties)
@@ -91,7 +93,7 @@ class PositiveIntervalPropagator( ErrorPropagator ):
   def __init__(self, *args, **kargs):
     super( PositiveIntervalPropagator, self ).__init__( *args, **kargs )
 
-  def propagate_uncertainties(self, *args, **kargs):
+  def __propagate_uncertainties__(self, func, *args, **kargs):
 
     # get nominal values for each argument
     nominal_args = []
@@ -103,7 +105,7 @@ class PositiveIntervalPropagator( ErrorPropagator ):
       nominal_kargs[k] = nominal( v )
 
     # calculate the nominal value of the function
-    nominal_value = self.func(*nominal_args,**nominal_kargs)
+    nominal_value = func(*nominal_args,**nominal_kargs)
 
 
 
@@ -117,12 +119,12 @@ class PositiveIntervalPropagator( ErrorPropagator ):
 
     for i in range(len(args)):
       evalargs[i]      = upper( args[i] )
-      uncertainties[i] = self.func(*evalargs,**nominal_kargs) - nominal_value
+      uncertainties[i] = func(*evalargs,**nominal_kargs) - nominal_value
       evalargs[i]      = nominal_args[i]
 
     for i in kargs:
       evalkargs[i]     = upper( kargs[i] )
-      uncertainties[i] = self.func(*nominal_args,**evalkargs) - nominal_value
+      uncertainties[i] = func(*nominal_args,**evalkargs) - nominal_value
       evalkargs[i]     = nominal_kargs[i]
 
 
@@ -137,7 +139,7 @@ class PositiveIntervalPropagator( ErrorPropagator ):
     # self.sigfigs = sigfigs
     # super( AutoErrorPropagator, self ).__init__( *args, **kargs )
 
-  # def propagate_uncertainties(self, *args, **kargs):
+  # def __propagate_uncertainties__(self, func, *args, **kargs):
     # new_args = []
     # for i,a in enumerate(args):
       # if not isinstance( a, pint.measurement._Measurement ):
@@ -150,7 +152,7 @@ class PositiveIntervalPropagator( ErrorPropagator ):
         # v = make_sigfig_UQ( v, self.sigfigs )
       # new_kargs[k] = v
 
-    # value,uncertainties = super( AutoErrorPropagator, self).propagate_uncertainties( *new_args, **new_kargs )
+    # value,uncertainties = super( AutoErrorPropagator, self).__propagate_uncertainties__( *new_args, **new_kargs )
 
     # return value, uncertainties
 
