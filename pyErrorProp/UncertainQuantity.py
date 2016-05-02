@@ -239,6 +239,17 @@ class _UncertainQuantity(object):
   def __rdiv__(self,other):
     return self._CONVENTION.__propagate_error__( operator.__div__, (other,self) )
 
+  def __eq__(self,other):
+    return self._CONVENTION.__eq__( self, other )
+
+  def __req__(self,other):
+    return self._CONVENTION.__eq__( self, other )
+
+  def __lt__(self,other):
+    return self._CONVENTION.__lt__( self, other )
+
+  def __gt__(self,other):
+    return self._CONVENTION.__gt__( self, other )
 
 
 

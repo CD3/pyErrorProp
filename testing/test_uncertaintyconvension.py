@@ -24,3 +24,4 @@ def test_from_data():
 
   assert Close( x.nominal.magnitude    , 2 )
   assert Close( x.uncertainty.magnitude, numpy.std( numpy.array([1,2,3]) )/(3.**0.5) )
+

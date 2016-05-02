@@ -140,3 +140,17 @@ def test_errors():
   with pytest.raises(pint.errors.DimensionalityError):
     x = UQ_( '1 m +/- 0.1 s' )
 
+
+def test_comparisons():
+
+  x = UQ_(20, 3, 'm')
+  y = UQ_(25, 4, 'm')
+  z = UQ_(31, 4, 'm')
+
+  assert     (x == y)
+  assert not (x == z)
+  assert not (x <  y)
+  assert     (x <  z)
+  assert not (y >  x)
+  assert     (z >  x)
+

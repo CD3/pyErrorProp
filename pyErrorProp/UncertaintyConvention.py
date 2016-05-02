@@ -3,7 +3,7 @@ import decimal
 import pint
 from pint import UnitRegistry
 
-from ErrorPropagator import PositiveIntervalPropagator
+from ErrorPropagator import PositiveIntervalPropagator, nominal, uncertainty
 
 UR = UnitRegistry()
 EP = PositiveIntervalPropagator
@@ -14,6 +14,10 @@ class UncertaintyConvention(object):
     self._UNITREGISTRY = _UR
     self.UncertainQuantity = build_uncertainquantity_class(self, self._UNITREGISTRY)
     self.ErrorPropagator = EP()
+
+  def z(self,a,b):
+    z =  ( nominal(a) - nominal(b) ) / ( uncertainty(a)**2 + uncertainty(b)**2)**0.5
+    return z
 
   def __propagate_error__(self, f, args, kwargs = {}):
     '''Propagates error through a function.'''
@@ -33,9 +37,23 @@ class UncertaintyConvention(object):
     '''
     return uq
 
-  def __eq__( self, uq ):
+  def __eq__( self, a, b ):
     '''Compare two uncertain quantities.'''
-    return False
+    # calculate z-value.
+    z = abs(self.z(a,b))
+    return z <= 2
+
+  def __lt__( self, a, b ):
+    '''Check that a is less than b.'''
+    # calculate z-value.
+    z = self.z(a,b)
+    return z < -2
+
+  def __gt__( self, a, b ):
+    '''Check that a is less than b.'''
+    # calculate z-value.
+    z = self.z(a,b)
+    return z > 2
 
   def calc_UncertainQuantity( self, data, round = False ):
     '''Computes an uncertain quantity from a data set (computes the standard error)'''
