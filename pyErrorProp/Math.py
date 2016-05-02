@@ -22,3 +22,34 @@ def manual_sin(x):
     pass
 
   return f(x)
+
+def WrapNumFunc( func, ounit, iunit ):
+  '''Wraps a numerical function to add support for units and uncertainty.'''
+
+  def wrapped_func(x):
+    f = func
+    if isinstance( f, (str,unicode) ) and hasattr( math, f ):
+      f = getattr( math, f )
+    else:
+      raise AttributeError( "Cannot find suitable function for '%s' in the math module." % f )
+
+    # add unit support
+    if hasattr(x,'_REGISTRY'):
+      f = x._REGISTRY.wraps( x._REGISTRY(iunit), x._REGISTRY(ounit), False )(f)
+
+    # add uncertainty support. this will fail if x is not an UncertainQuantity
+    if hasattr(x,'_CONVENTION'):
+      f = x._CONVENTION.WithError( f )
+
+    return f(x)
+
+  return wrapped_func
+
+
+
+sin  = WrapNumFunc( 'sin'  , 'radian' , ''       )
+cos  = WrapNumFunc( 'cos'  , 'radian' , ''       )
+tan  = WrapNumFunc( 'tan'  , 'radian' , ''       )
+asin = WrapNumFunc( 'asin' , ''       , 'radian' )
+acos = WrapNumFunc( 'acos' , ''       , 'radian' )
+atan = WrapNumFunc( 'atan' , ''       , 'radian' )
