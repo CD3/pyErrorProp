@@ -1,18 +1,24 @@
-from __future__ import absolute_import
 import math
-from .UncertaintyConvension import UC
 
-# @todo wrapper for functions that asks the argument for an implementation.
+# Add support for Uncertain Quantities to mathematical functions
+#
+# For each function we want to support, we need:
+#
+# 1. A version of the function that accepts and returns pint.Quantity instances.
+# 2. A version of the function that accepts and returns UncertainQuantity instances.
+#
+# The problem is complicated by pints usage of a registry (which we have adopted as well).
+# Quantities from different registries are not compatible, so we can't just create a registry
+# and wrap all of the functions because the user's registry will not be compatible. So,
+# we need a way to get at the user's registries...
 
-add_quantity_support = UR.wraps
-add_uncertainquantity_support = 
+# here is an example of how we would "manually" wrap sin
 
-# add unit support to math functions
-sin  = UR.wraps( UR(""), UR("radian") )(math.sin)
-cos  = UR.wraps( UR(""), UR("radian") )(math.cos)
-tan  = UR.wraps( UR(""), UR("radian") )(math.tan)
-asin = UR.wraps( UR("radian"), UR("") )(math.asin)
-acos = UR.wraps( UR("radian"), UR("") )(math.acos)
-atan = UR.wraps( UR("radian"), UR("") )(math.atan)
-def sqrt(q):
-  return q**(0.5)
+def manual_sin(x):
+  f = x._REGISTRY.wraps( x._REGISTRY(""), x._REGISTRY("radian"), False )(math.sin)
+  try:
+    f = x._CONVENTION.WithError( f )
+  except:
+    pass
+
+  return f(x)
