@@ -156,7 +156,6 @@ def test_division():
   assert Close( z.uncertainty, abs(dz), 0.001 )
 
 def test_sum():
-
   data = [ UQ_( 1, 0.1, 'm' )
          , UQ_( 2, 0.2, 'm' )
          , UQ_( 3, 0.3, 'm' )
@@ -177,6 +176,33 @@ def test_sum():
 
   assert Close( x.nominal.magnitude    , 2 )
   assert Close( x.uncertainty.magnitude, (0.1**2 + 0.2**2 + 0.3**2)**0.5 )
+
+def test_correlation():
+
+  x = UQ_( '2.5 +/- 0.5 m' )
+  y = UQ_( '2.5 +/- 0.5 m' )
+  w = x
+
+  # make x and y directly correlated
+  x.correlated(y,1.0)
+
+  # check that correlated vals reduce uncertainty
+  z = x - y
+
+  assert z.nominal.magnitude == 0
+  assert z.uncertainty.magnitude == 0
+
+  # make sure that a variable is correlated to itself
+  z = x - x
+
+  assert z.nominal.magnitude == 0
+  assert z.uncertainty.magnitude == 0
+
+  # and references to itself
+  z = x - w
+
+  assert z.nominal.magnitude == 0
+  assert z.uncertainty.magnitude == 0
 
 
 

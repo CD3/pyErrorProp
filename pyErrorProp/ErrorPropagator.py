@@ -1,3 +1,4 @@
+import CorrelationMatrix as CM
 import copy
 
 
@@ -62,25 +63,21 @@ class ErrorPropagator(object):
     self.func = func
     self.return_all_uncertainties = False
 
-  def total_uncertainty( self, uncertainties, correlations = None ):
+  def total_uncertainty( self, uncs, corr = None ):
     '''Compute and return the total uncertainty from individual uncertainty contributions.  '''
-    if isinstance(uncertainties,dict) or isinstance(uncertainties,collecitons.OrderedDict) :
-      uncs = uncertainties.values()
-    else:
-      uncs = uncertainties.values()
 
-    if corelations is None:
-      return sum( [ x*x for x in uncs ] )**0.5
+    if corr is None:
+      return sum( [x*x for x in uncs.values()] )**0.5
 
-    if isinstance( correlations, bool ) and correlations:
-      return sum( uncs )
-    else:
-      sum = 0
-      N = len(uncs)
-      for i in range(N):
-        for j in range(N):
-          sum += correlations(i,j) * uncs[i] * uncs[j]
-      return sum**0.5
+    if isinstance( corr, bool ) and corr:
+      return sum( uncs.values() )
+
+    tot = 0
+    N = len(uncs)
+    for i in range(N):
+      for j in range(N):
+        tot += corr(i,j) * uncs[i] * uncs[j]
+    return tot**0.5
 
 
   def __call__(self, *args, **kargs):
@@ -88,7 +85,17 @@ class ErrorPropagator(object):
 
   def propagate_uncertainties(self, func, *args, **kargs):
     nominal_value, uncertainties = self.__propagate_uncertainties__( func, *args, **kargs )
-    uncertainty   = self.total_uncertainty( uncertainties )
+
+    # build the correlation matrix
+    corr = CM.CorrelationMatrix( )
+    for k in uncertainties.keys():
+      if k in kargs:
+        corr.queue(kargs[k])
+      else:
+        corr.queue(args[k])
+    corr.make()
+
+    uncertainty = self.total_uncertainty( uncertainties.values(), corr )
     if self.return_all_uncertainties:
       return ( nominal_value, uncertainty, uncertainties)
     else:
