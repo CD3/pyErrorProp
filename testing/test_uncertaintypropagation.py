@@ -13,7 +13,6 @@ def Close( a, b, tol = 0.01 ):
 
 
 def test_addition():
-
   nx = Q_(1.5,'m')
   dx = Q_(1,'cm')
   x = UQ_( nx, dx )
@@ -36,7 +35,6 @@ def test_addition():
   z = nx + y
   assert Close( z.nominal, nx + ny, 0.001 )
   assert Close( z.uncertainty, dy, 0.001 )
-
 
 
 def test_subtraction():
