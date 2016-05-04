@@ -29,16 +29,15 @@ class _UncertainQuantity(object):
       else:
         unc = self.Quantity( unc, unit )
 
+    if str(unc.units) == 'percent':
+      unc = nom*unc.to('')
+
     # make sure units on unc and nom are compatible
     try:
       tmp = nom + unc
     except Exception as e:
-      try:
-        unc = nom*unc.to('')
-        tmp = nom + unc
-      except:
-        e.extra_msg = " Nominal value and uncertainty do not have compatible types."
-        raise e
+      e.extra_msg = " Nominal value and uncertainty do not have compatible types."
+      raise e
 
       
     self._nom = nom
@@ -212,6 +211,13 @@ class _UncertainQuantity(object):
 
     if nomu == '':
       nomu = uncu
+
+    if nomu == '':
+      nomu = 'dimensionless'
+
+    if uncu == '' and not unc[-1] == '%':
+      uncu = 'dimensionless'
+
 
     nom = '%s %s'%(nomv,nomu)
     unc = '%s %s'%(uncv,uncu)

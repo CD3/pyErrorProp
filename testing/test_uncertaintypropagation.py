@@ -1,15 +1,9 @@
 from pyErrorProp import UncertaintyConvention
+from Utils import *
 
 uconv = UncertaintyConvention()
 UQ_ = uconv.UncertainQuantity
 Q_  = UQ_.Quantity
-
-def Close( a, b, tol = 0.01 ):
-    if isinstance(a,int):
-        a = float(a)
-    if isinstance(b,int):
-        b = float(b)
-    return (a - b)**2 / (a**2 + b**2) < 4*tol*tol
 
 
 def test_addition():
@@ -35,7 +29,6 @@ def test_addition():
   z = nx + y
   assert Close( z.nominal, nx + ny, 0.001 )
   assert Close( z.uncertainty, dy, 0.001 )
-
 
 def test_subtraction():
   nx = Q_(1.5,'m')

@@ -52,7 +52,6 @@ class CorrelationMatrix(object):
 
     for q in quantities:
       self._queue.append( q )
-    
 
   def make( self, quantities = None ):
     '''Creates the correlation matrix from a list of quantities.

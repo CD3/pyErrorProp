@@ -31,6 +31,18 @@ def test_construction():
   assert Close( x.nominal.magnitude, 2 )
   assert Close( x.uncertainty.magnitude, 0.02 )
 
+
+  x = UQ_( '2 +/- 1' )
+
+  assert Close( x.nominal.magnitude, 2 )
+  assert Close( x.uncertainty.magnitude, 1 )
+
+  x = UQ_( '2 +/- 1%' )
+
+  # assert Close( x.nominal.magnitude, 2 )
+  # assert Close( x.uncertainty.magnitude, 0.02 )
+
+
 def test_properties():
   x = UQ_( Q_(1,'m'), Q_(1,'cm') )
 
@@ -127,11 +139,15 @@ def test_string_parsing():
 
   t = UQ_.parse_string("1.0 m +/- 0.01")
   assert t[0] == '1.0 m'
-  assert t[1] == '0.01'
+  assert t[1] == '0.01 dimensionless'
 
   t = UQ_.parse_string("1.0 m +/- 1%")
   assert t[0] == '1.0 m'
   assert t[1] == '1%'
+
+  t = UQ_.parse_string("1.0 +/- 1")
+  assert t[0] == '1.0 dimensionless'
+  assert t[1] == '1 dimensionless'
 
 def test_errors():
   with pytest.raises(pint.errors.DimensionalityError):
