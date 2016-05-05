@@ -94,8 +94,9 @@ class ErrorPropagator(object):
       else:
         corr.queue(args[k])
     corr.make()
-
     uncertainty = self.total_uncertainty( uncertainties.values(), corr )
+
+    # TODO: calculate the correlation between each input and the result.
     if self.return_all_uncertainties:
       return ( nominal_value, uncertainty, uncertainties)
     else:

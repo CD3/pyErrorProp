@@ -22,13 +22,18 @@ class UncertaintyConvention(object):
 
   def __propagate_error__(self, f, args, kwargs = {}):
     '''Propagates error through a function.'''
-    self.ErrorPropagator.func = f
+    self.ErrorPropagator.return_all_uncertainties = True
 
-    r = self.ErrorPropagator( *args, **kwargs )
+    nom,unc,uncs = self.ErrorPropagator.propagate_uncertainties( f, *args, **kwargs )
 
-    self.ErrorPropagator.func = None
+    y = self.UncertainQuantity(nom,unc)
+    # set correlations between inputs and result
+    for k in uncs:
+      x = kwargs.get( k, args[k] )
+      y.correlated( x, 1.0 if uncs[k].magnitude > 0 else -1.0 )
 
-    return self.UncertainQuantity(*r)
+
+    return y
 
   def __round__( self, uq ):
     '''Round an uncertain quantity based on the following conventions

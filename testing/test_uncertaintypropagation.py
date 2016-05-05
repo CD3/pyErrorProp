@@ -169,7 +169,6 @@ def test_sum():
   assert Close( x.uncertainty.magnitude, (0.1**2 + 0.2**2 + 0.3**2)**0.5 )
 
 def test_correlation():
-
   x = UQ_( '2.5 +/- 0.5 m' )
   y = UQ_( '2.5 +/- 0.5 m' )
   w = x
@@ -197,3 +196,27 @@ def test_correlation():
 
 
 
+def test_sum():
+  nx = Q_(1.5,'m')
+  dx = Q_(1,'cm')
+  x = UQ_( nx, dx )
+
+  ny = Q_(3.3,'m')
+  dy = Q_(2,'cm')
+  y = UQ_( ny, dy )
+
+  z = sum([x,y])
+  zz = x+y
+  assert Close( z.nominal, nx + ny, 0.001 )
+  assert Close( z.uncertainty, (dx**2 + dy**2)**0.5, 0.001 )
+  assert Close( z.nominal, zz.nominal, 0.001 )
+  assert Close( z.uncertainty, zz.uncertainty, 0.001 )
+
+  z = sum([x,x])
+  zz = x + x
+  assert Close( z.nominal, zz.nominal, 0.001 )
+  assert Close( z.uncertainty, zz.uncertainty, 0.001 )
+
+  z = sum( [ UQ_('2 +/- 0.1 m') ] * 10 )
+  assert Close( z.nominal.magnitude, 20, 1e-5 )
+  assert Close( z.uncertainty.magnitude, 1, 0.001 )

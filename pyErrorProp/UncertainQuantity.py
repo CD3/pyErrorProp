@@ -80,6 +80,10 @@ class _UncertainQuantity(object):
   def correlated( self, var, corr = None, return_None = True, bidirectional = True ):
     '''Get/set the correlation between another variable.'''
 
+    # only support correlation between UncertainQuantity instances
+    if not isinstance( var, _UncertainQuantity ):
+      return 0.0
+
     if self._corr == None:
       self._corr = {}
 
