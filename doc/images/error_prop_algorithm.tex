@@ -1,0 +1,13 @@
+\newcommand{\nom}[1]{\bar{#1}}
+\newcommand{\unc}[1]{\Delta {#1}}
+\newcommand{\upp}[1]{\nom{#1} + \unc{#1}}
+\begin{align*}
+x &= \nom{x} \pm \unc{x} \\
+y &= \nom{y} \pm \unc{y} \\
+z &= f(x,y) \\
+\\
+\nom{z} &= f(\nom{x},\nom{y}) \\
+\unc{z}_x &= f(\upp{x},\nom{y}) - \nom{f} \\
+\unc{z}_y &= f(\nom{x},\upp{y}) - \nom{f} \\
+\unc{z} &= \sqrt{ \unc{z}_x^2 + \unc{z}_y^2 } \\
+\end{align*}

@@ -2,14 +2,44 @@
 
 `pyErrorProp` is a python module that performs various calculations with uncertain quantities, including error propagation.
 The module uses `pint` to provide full support for physical quantities. Unlike the error propagation included with `pint` (which uses
-the `uncertainties` module), error propagation through arbitrary, user-defined functions is supported. The module includes a error propagation
-algorithm that handles both linear and non-linear functions, but allows for a user-defined algorithm to be used as well.
+the `uncertainties` module), error propagation through arbitrary, user-defined functions is supported. The module includes a simple error propagation
+algorithm that can easily be performed "by hand", but allows for a user-defined algorithm to be used as well.
 
 **Features**
+
 - full unit support
 - error propagation through arbitrary user-defined functions
 - simple function decorator syntax
 - support for user-defined error propagation algorithms
+
+**Motivation**
+
+This module was created to perform error analysis calculations that we teach to students in undergraduate Physics I/II courses. Rather than have student perform derivatives (which they cannot do in the
+algebra based course), we teach a method that only requires the function they are propagating
+error through to be calculated. The function is first evaluated using the nominal values for all
+input variables. The uncertainty in the result due to each input variable is then determined by
+evaluating the same function, but using the input variable's nominal value plus its uncertainty.
+The total uncertainty is then calculated by adding each individual uncertainty in quadrature.
+
+For example, if we have a function that depends on two measured quantities that both have uncertainty,
+we calculate the uncertainty in the result of the function as follows.
+
+![alg](./doc/images/error_prop_algorithm.png)
+
+This assumes that the input variables are uncorrelated, which is usually the
+case when the input variables are measured quantities.
+
+There are other packages that do error propagation:
+
+- `uncertainties`(https://github.com/lebigot/uncertainties) Uses first-order error propagation..
+  Derivatives of expressions are computed analytically and it handles correlation.
+- `soerp`(https://github.com/tisimst/soerp) Uses second-order error propgation. 
+  Derivatives of expressions are computed analytically and it handles correlation.
+- `mcerp` (https://github.com/tisimst/mcerp) Uses monte-carlo method to compute distribution
+  of the result of a calculation from the distributions of the inputs.
+
+However, I needed an implementation that would
+reproduce what the students would calculate by hand in order to write keys to assigned problems.
 
 ##Examples
 
