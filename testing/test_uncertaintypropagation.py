@@ -195,6 +195,11 @@ def test_correlation():
   assert z.uncertainty.magnitude == 0
 
 
+  w = -x
+  z = x+w
+  assert z.nominal.magnitude == 0
+  assert z.uncertainty.magnitude == 0
+
 
 def test_sum():
   nx = Q_(1.5,'m')

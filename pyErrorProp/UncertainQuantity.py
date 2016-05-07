@@ -1,4 +1,4 @@
-import operator, re, decimal
+import operator, re, decimal, copy
 import pint
 
 ureg = pint.UnitRegistry()
@@ -45,6 +45,7 @@ class _UncertainQuantity(object):
     self._corr = corr
 
     self._unit = self._nom.units
+
 
   def make(self,*args,**kwargs):
     '''Create an instance of the class, using the uncertainty convension if necessary.'''
@@ -244,7 +245,12 @@ class _UncertainQuantity(object):
     self._unit = self._nom.units
 
   def __neg__(self):
-    return self.make( -self._nom, self._unc )
+    uq = self.make( -self.nominal, self.uncertainty )
+    uq.correlated(self,-1)
+    # TODO: add correlations for all variables that self
+    # is correlated to
+
+    return uq
 
   def __add__(self,other):
     return self._CONVENTION.__propagate_error__( operator.__add__, (self,other) )

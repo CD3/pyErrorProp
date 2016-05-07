@@ -185,3 +185,4 @@ def test_correlation():
   assert x.correlated(z) == -0.8
   assert z.correlated(x) is None
 
+
