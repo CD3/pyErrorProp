@@ -132,8 +132,6 @@ class _UncertainQuantity(object):
     # Pint already handles formatting of units (and does a nice job), so we just need to format the value portion.
     # 
 
-
-
     # split the format spec into its value specific and unit specific parts
     v_fmtspec = fmtspec.replace('Lx','')
     v_fmtspec = pint.formatting.remove_custom_flags(v_fmtspec)

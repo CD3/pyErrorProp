@@ -9,6 +9,7 @@ UQ_ = uconv.UncertainQuantity
 Q_  = UQ_.Quantity
 
 def test_uncertainties_comparison():
+  import uncertainties
   from uncertainties import ufloat
   # compare error propagation.
   x = UQ_( '2.5 +/- 0.5 m' )
@@ -49,12 +50,12 @@ def test_uncertainties_comparison():
 
   # add correlation
   x.correlated(y,1)
+  (xx,yy) = uncertainties.correlated_values_norm( [(2.5,0.5), (2.5,0.5)], [ [1,1],[1,1] ] )
   z = x - y
   zz = xx - yy
   assert Close( z.nominal.magnitude, 0, 1e-5 )
   assert Close( z.nominal.magnitude, zz.nominal_value, 1e-5 )
-  # can't correlate variables, only affinescalarfuncs
-  assert not Close( z.uncertainty.magnitude, zz.std_dev, 1e-5 )
+  assert Close( z.uncertainty.magnitude, zz.std_dev, 1e-5 )
 
 
   num = 2
@@ -81,6 +82,24 @@ def test_uncertainties_comparison():
   assert Close( z.uncertainty.magnitude, (10*0.1), 1e-5 )
   assert Close( z.nominal.magnitude, zz.nominal_value, 1e-5 )
   assert Close( z.uncertainty.magnitude, zz.std_dev, 1e-5 )
+
+
+  zz = 2*xx
+  ww = zz + yy
+
+  z = 2*x
+  w = z + y
+
+  corr = uncertainties.correlation_matrix( [xx,yy,zz,ww] )
+
+  assert x.correlated(x) == corr[0][0]
+  assert x.correlated(y) == corr[0][1]
+  assert x.correlated(z) == corr[0][2]
+  assert not x.correlated(w) == corr[0][3] # we don't handle nested correlations yet
+  assert x.correlated(x) == corr[0][0]
+  assert y.correlated(x) == corr[1][0]
+  assert z.correlated(x) == corr[2][0]
+  assert not w.correlated(x) == corr[3][0]
 
 
 
