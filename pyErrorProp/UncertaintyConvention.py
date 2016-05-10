@@ -9,12 +9,13 @@ UR = UnitRegistry()
 EP = PositiveIntervalPropagator
 
 class UncertaintyConvention(object):
-
   def __init__(self, _UR = UR, _EP = EP):
     self._UNITREGISTRY = _UR
     self._ERRORPROPAGATOR = _EP
     self.UncertainQuantity = build_uncertainquantity_class(self, self._UNITREGISTRY)
     self.ErrorPropagator = EP()
+
+    self._correlations = dict()
 
   def z(self,a,b):
     z =  ( nominal(a) - nominal(b) ) / ( uncertainty(a)**2 + uncertainty(b)**2)**0.5

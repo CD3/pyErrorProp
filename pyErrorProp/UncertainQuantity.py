@@ -9,7 +9,7 @@ class _UncertainQuantity(object):
   _REGISTRY = ureg
   Quantity = _REGISTRY.Quantity
 
-  def __init__( self, nom, unc = None, unit = None, corr = None):
+  def __init__( self, nom, unc = None, unit = None ):
 
     if unc is None and unit is None and isinstance(nom,(str,unicode)):
       nom,unc = _UncertainQuantity.parse_string( nom )
@@ -42,7 +42,6 @@ class _UncertainQuantity(object):
       
     self._nom = nom
     self._unc = unc
-    self._corr = corr
 
     self._unit = self._nom.units
 
@@ -85,18 +84,21 @@ class _UncertainQuantity(object):
     if not isinstance( var, _UncertainQuantity ):
       return 0.0
 
-    if self._corr == None:
-      self._corr = {}
+    key = id(self)
+
+    if not key in self._CONVENTION._correlations:
+      self._CONVENTION._correlations[key] = dict()
+
+    corrs = self._CONVENTION._correlations[key]
 
     key = id(var)
 
     if corr is None:
       if self is var:
         return 1
+      return corrs.get( key, None if return_None else 0 )
 
-      return self._corr.get( key, None if return_None else 0 )
-
-    self._corr[key] = corr
+    corrs[key] = corr
 
     if bidirectional:
       var.correlated(self,corr,bidirectional=False)
