@@ -5,12 +5,12 @@ from pint import UnitRegistry
 
 from .ErrorPropagator import PositiveIntervalPropagator, nominal, uncertainty
 from .CorrelationRegistry import CorrelationRegistry
-from .CorrelationMatrix import CorrelationMatrix
 
 UR = UnitRegistry()
 EP = PositiveIntervalPropagator
 
 class UncertaintyConvention(object):
+
   def __init__(self, _UR = UR, _EP = EP):
     self._UNITREGISTRY = _UR
     self._ERRORPROPAGATOR = _EP

@@ -13,3 +13,4 @@ def test_construction():
 
   assert creg.correlation(x,y) == 0.6
 
+  assert str(creg.matrix(x,y)) == '1.0 0.6 \n0.6 1.0 \n'

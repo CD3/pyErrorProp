@@ -1,4 +1,3 @@
-import CorrelationMatrix as CM
 import copy
 
 
