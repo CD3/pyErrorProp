@@ -77,31 +77,25 @@ class _UncertainQuantity(object):
     return 2*self.uncertainty
 
 
-  def correlated( self, var, corr = None, return_None = True, bidirectional = True ):
-    '''Get/set the correlation between another variable.'''
+  def correlated( self, var, corr = None):
+    '''Set the correlation between another variable.'''
 
     # only support correlation between UncertainQuantity instances
     if not isinstance( var, _UncertainQuantity ):
-      return 0.0
+      return
 
-    key = id(self)
-
-    if not key in self._CONVENTION._correlations:
-      self._CONVENTION._correlations[key] = dict()
-
-    corrs = self._CONVENTION._correlations[key]
-
-    key = id(var)
-
-    if corr is None:
-      if self is var:
-        return 1
-      return corrs.get( key, None if return_None else 0 )
+    corrs = self._CONVENTION._correlations
+    key = ''.join( sorted( [str(id(self)),str(id(var))] ) )
 
     corrs[key] = corr
 
-    if bidirectional:
-      var.correlated(self,corr,bidirectional=False)
+  def correlation( self, var, return_None = False ):
+    '''Get the correlation between another variable.'''
+    if var is self:
+      return 1.0
+    key = ''.join( sorted( [str(id(self)),str(id(var))] ) )
+    return self._CONVENTION._correlations.get( key, None if return_None else 0 )
+    
 
 
   def __repr__(self):

@@ -92,14 +92,14 @@ def test_uncertainties_comparison():
 
   corr = uncertainties.correlation_matrix( [xx,yy,zz,ww] )
 
-  assert x.correlated(x) == corr[0][0]
-  assert x.correlated(y) == corr[0][1]
-  assert x.correlated(z) == corr[0][2]
-  assert not x.correlated(w) == corr[0][3] # we don't handle nested correlations yet
-  assert x.correlated(x) == corr[0][0]
-  assert y.correlated(x) == corr[1][0]
-  assert z.correlated(x) == corr[2][0]
-  assert not w.correlated(x) == corr[3][0]
+  assert x.correlation(x) == corr[0][0]
+  assert x.correlation(y) == corr[0][1]
+  assert x.correlation(z) == corr[0][2]
+  assert not x.correlation(w) == corr[0][3] # we don't handle nested correlations yet
+  assert x.correlation(x) == corr[0][0]
+  assert y.correlation(x) == corr[1][0]
+  assert z.correlation(x) == corr[2][0]
+  assert not w.correlation(x) == corr[3][0]
 
 
 

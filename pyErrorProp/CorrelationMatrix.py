@@ -73,7 +73,7 @@ class CorrelationMatrix(object):
         if i == j:
           c = 1
         elif isinstance( quantities[i], _UncertainQuantity ):
-          c = quantities[i].correlated(quantities[j], return_None=False)
+          c = quantities[i].correlation(quantities[j])
         else:
           c = 0
         self.set(i,j,c,map_indexes=False )
