@@ -3,7 +3,9 @@ import decimal
 import pint
 from pint import UnitRegistry
 
-from ErrorPropagator import PositiveIntervalPropagator, nominal, uncertainty
+from .ErrorPropagator import PositiveIntervalPropagator, nominal, uncertainty
+from .CorrelationRegistry import CorrelationRegistry
+from .CorrelationMatrix import CorrelationMatrix
 
 UR = UnitRegistry()
 EP = PositiveIntervalPropagator
@@ -15,23 +17,33 @@ class UncertaintyConvention(object):
     self.UncertainQuantity = build_uncertainquantity_class(self, self._UNITREGISTRY)
     self.ErrorPropagator = EP()
 
-    self._correlations = dict()
+    self._CORRREGISTRY = CorrelationRegistry()
 
   def z(self,a,b):
-    z =  ( nominal(a) - nominal(b) ) / ( uncertainty(a)**2 + uncertainty(b)**2)**0.5
-    return z
+    try:
+      return ( nominal(a) - nominal(b) ) / (uncertainty(a)**2 + uncertainty(b)**2)**0.5
+    except:
+      return 1e10
 
   def __propagate_error__(self, f, args, kwargs = {}):
     '''Propagates error through a function.'''
     self.ErrorPropagator.return_all_uncertainties = True
 
-    nom,unc,uncs = self.ErrorPropagator.propagate_uncertainties( f, *args, **kwargs )
+    nom,uncs = self.ErrorPropagator.__propagate_uncertainties__( f, *args, **kwargs )
+    unc = 0
+    for ki in uncs:
+      a = kwargs[ki] if ki in kwargs else args[ki]
+      for kj in uncs:
+        b = kwargs[kj] if kj in kwargs else args[kj]
+        unc += self._CORRREGISTRY.correlation(a,b) * uncs[ki] * uncs[kj]
+    unc = unc**0.5
 
     y = self.UncertainQuantity(nom,unc)
+
     # set correlations between inputs and result
     for k in uncs:
       x = kwargs.get( k, args[k] )
-      y.correlated( x, 1.0 if uncs[k].magnitude > 0 else -1.0 )
+      self._CORRREGISTRY.correlated( y, x, 1.0 if uncs[k].magnitude > 0 else -1.0 )
 
 
     return y
@@ -44,12 +56,6 @@ class UncertaintyConvention(object):
     '''
     return uq
 
-  def __eq__( self, a, b ):
-    '''Compare two uncertain quantities.'''
-    # calculate z-value.
-    z = abs(self.z(a,b))
-    return z <= 2
-
   def __lt__( self, a, b ):
     '''Check that a is less than b.'''
     # calculate z-value.
@@ -61,6 +67,10 @@ class UncertaintyConvention(object):
     # calculate z-value.
     z = self.z(a,b)
     return z > 2
+
+  def consistent( self, a, b ):
+    z = abs( self.z(a,b) )
+    return z <= 2
 
   def calc_UncertainQuantity( self, data, round = False ):
     '''Computes an uncertain quantity from a data set (computes the standard error)'''

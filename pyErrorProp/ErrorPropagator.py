@@ -67,10 +67,10 @@ class ErrorPropagator(object):
     '''Compute and return the total uncertainty from individual uncertainty contributions.  '''
 
     if corr is None:
-      return sum( [x*x for x in uncs.values()] )**0.5
+      return sum( [x*x for x in uncs] )**0.5
 
     if isinstance( corr, bool ) and corr:
-      return sum( uncs.values() )
+      return sum( uncs )
 
     tot = 0
     N = len(uncs)
@@ -84,19 +84,12 @@ class ErrorPropagator(object):
     return self.propagate_uncertainties(self.func, *args, **kargs)
 
   def propagate_uncertainties(self, func, *args, **kargs):
+    '''Propagates error through a function returning the nominal value, total uncertainty (ignoring correlation)
+       and (optionally) each uncertainty component. If correlations are needed, call __propagate_uncertainties__
+       instead and use the total_uncertainty method to calculate the total uncertainty with correlation.'''
     nominal_value, uncertainties = self.__propagate_uncertainties__( func, *args, **kargs )
+    uncertainty = self.total_uncertainty( uncertainties.values() )
 
-    # build the correlation matrix
-    corr = CM.CorrelationMatrix( )
-    for k in uncertainties.keys():
-      if k in kargs:
-        corr.queue(kargs[k])
-      else:
-        corr.queue(args[k])
-    corr.make()
-    uncertainty = self.total_uncertainty( uncertainties.values(), corr )
-
-    # TODO: calculate the correlation between each input and the result.
     if self.return_all_uncertainties:
       return ( nominal_value, uncertainty, uncertainties)
     else:
@@ -178,33 +171,14 @@ def WithError(func):
   propagator.func = func
   return propagator
 
-# def WithUncertainties(func):
-  # propagator = PositiveIntervalPropagator()
-  # propagator.func = func
-  # propagator.set_return_uncertainties(True)
-  # return propagator
+def WithAutoError(sigfigs=3):
+  propagator = AutoErrorPropagator()
+  propagator.sigfigs = sigfigs
 
-# def WithAutoError(sigfigs=3):
-  # propagator = AutoErrorPropagator()
-  # propagator.sigfigs = sigfigs
+  def Decorator(func):
+    propagator.func = func
+    return propagator
 
-  # def Decorator(func):
-    # propagator.func = func
-    # return propagator
-
-  # return Decorator
-
-# def WithErrorPropagator(propagator=None):
-  # if propagator is None:
-    # return WithError
-
-  # def Decorator(func):
-    # propagator.func = func
-    # return propagator
-
-  # return Decorator
-
-
-
+  return Decorator
 
 

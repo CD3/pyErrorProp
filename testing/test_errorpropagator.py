@@ -3,19 +3,13 @@
 import pint, numpy
 from pyErrorProp import *
 import pytest
+from Utils import Close
 
 ureg = pint.UnitRegistry()
 Q_ = ureg.Quantity
 UQ_ = ureg.Measurement
 
 
-
-def Close( a, b, tol = 0.01 ):
-    if isinstance(a,int):
-        a = float(a)
-    if isinstance(b,int):
-        b = float(b)
-    return (a - b)**2 / (a**2 + b**2) < 4*tol*tol
 
 def test_simple_error_prop():
 

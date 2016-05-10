@@ -165,7 +165,7 @@ def test_mcerp_comparison():
 
   assert Close( z.nominal.magnitude, 2*2, 1e-2 )
   assert Close( z.uncertainty.magnitude, (2*0.1), 1e-2 )
-  assert Close( z.nominal.magnitude, zz.mean, 1e-2 )
+  assert Close( z.nominal.magnitude, zz.mean, 1e-1 )
   assert Close( z.uncertainty.magnitude, math.sqrt(zz.var), 1e-2 )
 
 

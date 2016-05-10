@@ -1,17 +1,12 @@
 from pyErrorProp import UncertaintyConvention
 import pint
+from Utils import Close
 import pytest
 
 uconv = UncertaintyConvention()
 UQ_ = uconv.UncertainQuantity
 Q_ = UQ_.Quantity
 
-def Close( a, b, tol = 0.01 ):
-    if isinstance(a,int):
-        a = float(a)
-    if isinstance(b,int):
-        b = float(b)
-    return (a - b)**2 / (a**2 + b**2) < 4*tol*tol
 
 def test_construction():
   x = UQ_( Q_(2,'m/s'), Q_(0.5,'cm/s') )
@@ -163,8 +158,8 @@ def test_comparisons():
   y = UQ_(25, 4, 'm')
   z = UQ_(31, 4, 'm')
 
-  assert     (x == y)
-  assert not (x == z)
+  assert     x.consistent(y)
+  assert not x.consistent(z)
   assert not (x <  y)
   assert     (x <  z)
   assert not (y >  x)

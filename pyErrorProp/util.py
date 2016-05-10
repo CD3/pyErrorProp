@@ -50,7 +50,17 @@ def sigfig_round( v, n = 2 ):
   # get the decimal position of the n'th sigfig and round
   return type(v)(round(v*10**nd))/type(v)(10**nd)
 
+def isuncertain(v):
+  if hasattr( v, 'uncertainty' ):
+    return True
+  
+  if hasattr( v, 'error' ):
+    return True
 
+  if hasattr( v, 'std_dev' ):
+    return True
+
+  return False
 
 
 

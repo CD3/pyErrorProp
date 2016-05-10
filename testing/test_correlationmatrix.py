@@ -13,7 +13,7 @@ def test_construction():
 
   x.correlated(y,0.8)
 
-  M = CorrelationMatrix.CorrelationMatrix( [x,y] )
+  M = CorrelationMatrix( [x,y] )
 
   assert str(M) == '1.0 0.8 \n0.8 1.0 \n'
   

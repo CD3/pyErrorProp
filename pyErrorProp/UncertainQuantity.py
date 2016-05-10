@@ -77,25 +77,14 @@ class _UncertainQuantity(object):
     return 2*self.uncertainty
 
 
-  def correlated( self, var, corr = None):
+  def correlated( self, var, corr ):
     '''Set the correlation between another variable.'''
+    self._CONVENTION._CORRREGISTRY.correlated(self,var,corr)
 
-    # only support correlation between UncertainQuantity instances
-    if not isinstance( var, _UncertainQuantity ):
-      return
 
-    corrs = self._CONVENTION._correlations
-    key = ''.join( sorted( [str(id(self)),str(id(var))] ) )
-
-    corrs[key] = corr
-
-  def correlation( self, var, return_None = False ):
+  def correlation( self, var, default = 0.0 ):
     '''Get the correlation between another variable.'''
-    if var is self:
-      return 1.0
-    key = ''.join( sorted( [str(id(self)),str(id(var))] ) )
-    return self._CONVENTION._correlations.get( key, None if return_None else 0 )
-    
+    return self._CONVENTION._CORRREGISTRY.correlation(self,var,default)
 
 
   def __repr__(self):
@@ -269,11 +258,8 @@ class _UncertainQuantity(object):
   def __rdiv__(self,other):
     return self._CONVENTION.__propagate_error__( operator.__div__, (other,self) )
 
-  def __eq__(self,other):
-    return self._CONVENTION.__eq__( self, other )
-
-  def __req__(self,other):
-    return self._CONVENTION.__eq__( self, other )
+  def consistent(self,other):
+    return self._CONVENTION.consistent( self, other )
 
   def __lt__(self,other):
     return self._CONVENTION.__lt__( self, other )
