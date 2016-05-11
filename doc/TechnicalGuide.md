@@ -84,7 +84,7 @@ $$
   \unc{z} &\approx f(\upp{x}) - \nom{x}.
 \end{aligned}
 $$
-This has the advantage of being very simple, and can be performed by hand if needed. In fact, that is the original motivation for this module. I needed to calculate the uncertainty in a calculation so that I could check the uncertainty
+This has the advantage of being very simple, and can be performed by hand if needed. In fact, that is the original motivation for this module. I needed to determine the uncertainty in a calculation so that I could check the uncertainty
 calculated by students in a physic laboratory class. This method makes intuitive sense (we just want to see how much different our answer would be if $x$ increased by its uncertainty), but it is not without justification. The first-order
 error propagation method is based on the approximation
 $$
@@ -133,7 +133,7 @@ of these calculations *will* be correlated, and additional calculations that inv
 then you must evaluate the uncertainty of all of your calculations directly from the uncertainty of the measurements. The following example illustrates this.
 
 
-## Determining the correlation coefficient.
+## Determining the Correlation Coefficients
 
 The correlation between two measurements can be directly calculated from Equation [#correlation], it is the average of the product of their deviations. However, if we perform a calculation that involves a measured quantity, then
 the result of the calculation will be correlated to the measurement and we must take this into account if other calculations involving the result are done.
@@ -146,7 +146,7 @@ Replacing $z$ with its first order approximation gives
 $$
 \ex{ (z-\nom{z})(x-\nom{x})}  = \ex{ f^{\prime}(\nom{x})(x-\nom{x})(x-\nom{x}) } = f^{\prime}(\nom{x})\ex{ (x-\nom{x})^2 } = f^{\prime}(\nom{x})\unc{x}^2
 $$
-Recall that $\unc{z} = |f^{\prime}(\nom{x})|$, so the correlation coefficient can be written as 
+Recall that $\unc{z} = |f^{\prime}(\nom{x})\unc{x}|$, so the correlation coefficient can be written as 
 $$
 r_{z,x} = \frac{ \pm\unc{z} \unc{x} }{\unc{z}\unc{x}} = \pm 1.
 $$
@@ -185,6 +185,16 @@ r_{z,y} = \frac{\unc{z}_y}{\unc{z}} + \frac{\unc{z}_x}{\unc{z}}r_{x,y}.
 $$
 So, the correlation between $z$ and the quantities it is calculated from depends on the correlation between the quantities themselves. If all quantities are uncorrelated, then
 $z$ will be correlated to each. However, if two or more quantities are correlated, then $z$ could be uncorrelated with them.
+
+It is possible for the uncertainty in $z$ to be zero if $x$ and $y$ are correlated, in which case the denominator will be zero. We need to handle this case seprately.
+$$
+r_{z,x} &= \frac{\unc{z}_x + \unc{z}_y r_{y,x}}{\unc{z}}
+        &= \frac{\unc{z}_x + \unc{z}_y r_{y,x}}{\sqrt{ \unc{z}_{x}^2 + \unc{z}_{y}^2 + 2\unc{z}_{x}\unc{z}_{y} r_{x,y} } }
+$$
+There the denominator will be zero if $-2\unc{z}_x\unc{z}_yr_{x,y} = \unc{z}_x^2 + \unc{z}_x^2$. This will
+$$
+r_{z,x} &= \frac{\unc{z}_x - \unc{z}_y }{\sqrt{ \unc{z}_{x}^2 + \unc{z}_{y}^2 - 2\unc{z}_{x}\unc{z}_{y} } }.
+$$
 
 # Summary
 
