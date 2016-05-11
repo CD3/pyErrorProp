@@ -38,15 +38,22 @@ class UncertaintyConvention(object):
         unc += self._CORRREGISTRY.correlation(a,b) * uncs[ki] * uncs[kj]
     unc = unc**0.5
 
-    y = self.UncertainQuantity(nom,unc)
+    z = self.UncertainQuantity(nom,unc)
 
     # set correlations between inputs and result
-    for k in uncs:
-      x = kwargs.get( k, args[k] )
-      self._CORRREGISTRY.correlated( y, x, 1.0 if uncs[k].magnitude > 0 else -1.0 )
+    for ki in uncs:
+      x = kwargs[ki] if ki in kwargs else args[ki]
+      r = 0.0
+      for kj in uncs:
+        y  = kwargs[kj] if kj in kwargs else args[kj]
+        try:
+          r += (uncs[kj] / unc) * self._CORRREGISTRY.correlation( x, y )
+        except ZeroDivisionError:
+          # if uncertainty in results is zero, then it is uncorrelated with the inputs
+          break
+      self._CORRREGISTRY.correlated( z, x, r )
 
-
-    return y
+    return z
 
   def __round__( self, uq ):
     '''Round an uncertain quantity based on the following conventions
@@ -88,7 +95,7 @@ class UncertaintyConvention(object):
 
   def WithError(self,func):
     def wrapper(*args,**kwargs):
-      return self.UncertainQuantity( *self.ErrorPropagator.propagate_uncertainties( func, *args, **kwargs ) )
+      return self.__propagate_error__( func, args, kwargs )
 
     return wrapper
 
