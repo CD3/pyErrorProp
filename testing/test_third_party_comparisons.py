@@ -125,7 +125,7 @@ def test_uncertainties_comparison_correlations():
 def test_uncertainties_comparison_speed():
   import uncertainties
   from uncertainties import ufloat
-  # compare error propagation.
+
   x = UQ_( '15. +/- 0.1 m' )
   y = UQ_( '25. +/- 0.2 m' )
   w = UQ_( '35. +/- 0.3 m' )
@@ -137,6 +137,12 @@ def test_uncertainties_comparison_speed():
   z = ((x - y)/(x - w))*w
   zz = ((xx - yy)/(xx - ww))*ww
 
+  print timeit.timeit( lambda : ((x - y)/(x - w))*w, number = 20 )
+  print timeit.timeit( lambda : ((xx - yy)/(xx - ww))*ww, number = 20 )
+
+  assert Close( z.nominal.magnitude    , zz.nominal_value)
+  assert Close( z.uncertainty.magnitude, zz.std_dev)
+
   corr = uconv.correlations.matrix( x,y,z,w )
   ccorr = uncertainties.correlation_matrix( [xx,yy,zz,ww] )
 
@@ -144,8 +150,28 @@ def test_uncertainties_comparison_speed():
     for j in range(4):
       assert Close( corr(i,j), ccorr[i][j], 0.1 )
 
+
+def test_pint_measurement_comparison_speed():
+  import pint
+  ureg = pint.UnitRegistry()
+
+  x = UQ_( '15. +/- 0.1 m' )
+  y = UQ_( '25. +/- 0.2 m' )
+  w = UQ_( '35. +/- 0.3 m' )
+
+  xx = ureg.Measurement( ureg.Quantity(15.,'m'), ureg.Quantity(0.1,'m') )
+  yy = ureg.Measurement( ureg.Quantity(25.,'m'), ureg.Quantity(0.2,'m') )
+  ww = ureg.Measurement( ureg.Quantity(35.,'m'), ureg.Quantity(0.3,'m') )
+
+  z = ((x - y)/(x - w))*w
+  zz = ((xx - yy)/(xx - ww))*ww
+
   print timeit.timeit( lambda : ((x - y)/(x - w))*w, number = 20 )
   print timeit.timeit( lambda : ((xx - yy)/(xx - ww))*ww, number = 20 )
+
+  assert Close( z.nominal.magnitude, zz.value.magnitude )
+  # assert Close( z.uncertainty.magnitude, zz.error.magnitude )
+
 
 
 def test_mcerp_comparison():
