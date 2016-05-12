@@ -122,7 +122,30 @@ def test_uncertainties_comparison_correlations():
   z = x*x + x*y
   zz = xx*xx + xx*yy
 
+def test_uncertainties_comparison_speed():
+  import uncertainties
+  from uncertainties import ufloat
+  # compare error propagation.
+  x = UQ_( '15. +/- 0.1 m' )
+  y = UQ_( '25. +/- 0.2 m' )
+  w = UQ_( '35. +/- 0.3 m' )
 
+  xx = ufloat( 15, 0.1 )
+  yy = ufloat( 25, 0.2 )
+  ww = ufloat( 35, 0.3 )
+
+  z = ((x - y)/(x - w))*w
+  zz = ((xx - yy)/(xx - ww))*ww
+
+  corr = uconv.correlations.matrix( x,y,z,w )
+  ccorr = uncertainties.correlation_matrix( [xx,yy,zz,ww] )
+
+  for i in range(4):
+    for j in range(4):
+      assert Close( corr(i,j), ccorr[i][j], 0.1 )
+
+  print timeit.timeit( lambda : ((x - y)/(x - w))*w, number = 20 )
+  print timeit.timeit( lambda : ((xx - yy)/(xx - ww))*ww, number = 20 )
 
 
 def test_mcerp_comparison():

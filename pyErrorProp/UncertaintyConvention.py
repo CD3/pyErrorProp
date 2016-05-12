@@ -19,6 +19,10 @@ class UncertaintyConvention(object):
 
     self._CORRREGISTRY = CorrelationRegistry()
 
+  @property
+  def correlations(self):
+    return self._CORRREGISTRY
+
   def z(self,a,b):
     try:
       return ( nominal(a) - nominal(b) ) / (uncertainty(a)**2 + uncertainty(b)**2)**0.5
