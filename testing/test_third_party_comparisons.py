@@ -8,7 +8,7 @@ uconv = UncertaintyConvention()
 UQ_ = uconv.UncertainQuantity
 Q_  = UQ_.Quantity
 
-def test_uncertainties_comparison():
+def test_uncertainties_comparison_general():
   import uncertainties
   from uncertainties import ufloat
   # compare error propagation.
@@ -95,11 +95,33 @@ def test_uncertainties_comparison():
   assert x.correlation(x) == corr[0][0]
   assert x.correlation(y) == corr[0][1]
   assert x.correlation(z) == corr[0][2]
-  assert not x.correlation(w) == corr[0][3] # we don't handle nested correlations yet
+  assert x.correlation(w) == corr[0][3]
   assert x.correlation(x) == corr[0][0]
   assert y.correlation(x) == corr[1][0]
   assert z.correlation(x) == corr[2][0]
-  assert not w.correlation(x) == corr[3][0]
+  assert w.correlation(x) == corr[3][0]
+
+def test_uncertainties_comparison_correlations():
+  import uncertainties
+  from uncertainties import ufloat
+  # compare error propagation.
+  x = UQ_( '2.0 +/- 0.5 m' )
+  y = UQ_( '3.5 +/- 0.25 m' )
+  w = UQ_( '8.5 +/- 0.5 m' )
+
+  xx = ufloat( 2.0, 0.5 )
+  yy = ufloat( 3.5, 0.25 )
+  ww = ufloat( 8.5, 0.5 )
+
+  z = x*x
+  zz = xx*xx
+
+  z = x*y
+  zz = xx*yy
+
+  z = x*x + x*y
+  zz = xx*xx + xx*yy
+
 
 
 

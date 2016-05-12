@@ -179,22 +179,35 @@ r_{z,x} &= \frac{f^{\prime}_x(\nom{x},\nom{y}) \unc{x}^2}{\unc{z}\unc{x}} + \fra
         &= \frac{\unc{z}_x}{\unc{z}} + \frac{\unc{z}_y}{\unc{z}}r_{y,x} 
 \end{aligned}
 $$
-The correlation between $z$ and $y$ is obtained in the same way
+If $z$ depended on another quantity, then an additional term similar to the second would be required. Assume $z = f(x,y,w)$, then we would have
 $$
-r_{z,y} = \frac{\unc{z}_y}{\unc{z}} + \frac{\unc{z}_x}{\unc{z}}r_{x,y}.
+r_{z,x} = \frac{\unc{z}_x}{\unc{z}} + \frac{\unc{z}_y}{\unc{z}}r_{y,x} + \frac{\unc{z}_w}{\unc{z}}r_{y,x}
 $$
 So, the correlation between $z$ and the quantities it is calculated from depends on the correlation between the quantities themselves. If all quantities are uncorrelated, then
 $z$ will be correlated to each. However, if two or more quantities are correlated, then $z$ could be uncorrelated with them.
 
-It is possible for the uncertainty in $z$ to be zero if $x$ and $y$ are correlated, in which case the denominator will be zero. We need to handle this case seprately.
+The first term may appear to be different than the last two initially, but it can rewritten in the same form,
 $$
-r_{z,x} &= \frac{\unc{z}_x + \unc{z}_y r_{y,x}}{\unc{z}}
-        &= \frac{\unc{z}_x + \unc{z}_y r_{y,x}}{\sqrt{ \unc{z}_{x}^2 + \unc{z}_{y}^2 + 2\unc{z}_{x}\unc{z}_{y} r_{x,y} } }
+r_{z,x} = \frac{\unc{z}_x}{\unc{z}}r_{y,x} + \frac{\unc{z}_y}{\unc{z}}r_{y,x} + \frac{\unc{z}_w}{\unc{z}}r_{y,x}.
 $$
-There the denominator will be zero if $-2\unc{z}_x\unc{z}_yr_{x,y} = \unc{z}_x^2 + \unc{z}_x^2$. This will
+In fact, this formula works for quantities that $z$ does not directly depend on. Let $z = f(x,y,w)$, and consider the correlation between $z$ and $v$,
 $$
-r_{z,x} &= \frac{\unc{z}_x - \unc{z}_y }{\sqrt{ \unc{z}_{x}^2 + \unc{z}_{y}^2 - 2\unc{z}_{x}\unc{z}_{y} } }.
+\begin{aligned}
+r_{z,v} &= \frac{1}{\unc{z}\unc{v}} \ex{ \left[f^{\prime}_x(\nom{x},\nom{y},\nom{w}) (x-\nom{x})
+                                             + f^{\prime}_y(\nom{x},\nom{y},\nom{w}) (y-\nom{y})
+                                             + f^{\prime}_w(\nom{x},\nom{y},\nom{w}) (w-\nom{w})\right] (v-\nom{v})
+                                    } \\
+        &= \frac{1}{\unc{z}\unc{v}} \left[f^{\prime}_x(\nom{x},\nom{y},\nom{w}) \sigma_{x,v}
+                                        + f^{\prime}_y(\nom{x},\nom{y},\nom{w}) \sigma_{y,v}
+                                        + f^{\prime}_w(\nom{x},\nom{y},\nom{w}) \sigma_{w,v}\right] \\
+        &= \frac{\unc{z}_x}{\unc{z}} r_{x,v}
+         + \frac{\unc{z}_y}{\unc{z}} r_{y,v}
+         + \frac{\unc{z}_w}{\unc{z}} r_{w,v}
+\end{aligned}
 $$
+
+It is possible for the uncertainty in $z$ to be zero if its inputs are correlated, which will cause the denominator to be zero. If this happens, then $z$ is
+uncorrelated with the inputs.
 
 # Summary
 

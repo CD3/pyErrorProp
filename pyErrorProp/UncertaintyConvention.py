@@ -27,31 +27,47 @@ class UncertaintyConvention(object):
 
   def __propagate_error__(self, f, args, kwargs = {}):
     '''Propagates error through a function.'''
-    self.ErrorPropagator.return_all_uncertainties = True
+    # assume we are calculating z = f(x,y,...)
+    zbar,dzs= self.ErrorPropagator.__propagate_uncertainties__( f, *args, **kwargs )
 
-    nom,uncs = self.ErrorPropagator.__propagate_uncertainties__( f, *args, **kwargs )
-    unc = 0
-    for ki in uncs:
-      a = kwargs[ki] if ki in kwargs else args[ki]
-      for kj in uncs:
-        b = kwargs[kj] if kj in kwargs else args[kj]
-        unc += self._CORRREGISTRY.correlation(a,b) * uncs[ki] * uncs[kj]
-    unc = unc**0.5
+    # dzs is a dict of the uncertainty contributions from args and kwargs.
+    # it will be more convienient to have a list of quantities paired with their uncertainty...
+    dzs = [ ( dzs[k], kwargs[k] if k in kwargs else args[k] ) for k in dzs ]
 
-    z = self.UncertainQuantity(nom,unc)
+    creg = self._CORRREGISTRY
 
-    # set correlations between inputs and result
-    for ki in uncs:
-      x = kwargs[ki] if ki in kwargs else args[ki]
+    # calculate the total uncertainty
+    dz = 0
+    for dzx,x in dzs:
+      for dzy,y in dzs:
+        dz += creg.correlation(x,y) * dzx * dzy
+    dz = dz**0.5
+
+    z = self.UncertainQuantity(zbar,dz)
+
+    # set correlations for the result
+    # the result may be correlated to each of the inputs, but
+    # may also be correlated to all of the quantities that the inputs are correlated to.
+
+    for dzx,x in dzs:
       r = 0.0
-      for kj in uncs:
-        y  = kwargs[kj] if kj in kwargs else args[kj]
+      for dzy,y in dzs:
         try:
-          r += (uncs[kj] / unc) * self._CORRREGISTRY.correlation( x, y )
+          r += (dzy / dz) * creg.correlation( x, y )
         except ZeroDivisionError:
-          # if uncertainty in results is zero, then it is uncorrelated with the inputs
+          # if dz is zero, then z is not correlated to anything
           break
-      self._CORRREGISTRY.correlated( z, x, r )
+      creg.correlated( z, x, r )
+
+      for v in creg.dependencies(x):
+        r = 0.0
+        for dzy,y in dzs:
+          try:
+            r += (dzy / dz) * creg.correlation( v, y )
+          except ZeroDivisionError:
+            # if dz is zero, then z is not correlated to anything
+            break
+        creg.correlated( z, v, r )
 
     return z
 
