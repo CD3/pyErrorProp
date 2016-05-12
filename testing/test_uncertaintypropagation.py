@@ -225,3 +225,32 @@ def test_sum():
   z = sum( [ UQ_('2 +/- 0.1 m') ] * 10 )
   assert Close( z.nominal.magnitude, 20, 1e-5 )
   assert Close( z.uncertainty.magnitude, 1, 0.001 )
+
+def test_power():
+  x = UQ_( Q_(1.5,'m'), Q_(1,'cm') )
+  y = UQ_( Q_(2.5,'m'), Q_(2,'cm') )
+
+  z = x**2
+  assert Close( z.nominal, x.nominal**2, 0.001 )
+  assert Close( z.uncertainty, abs(x.upper**2 - x.nominal**2), 0.001 )
+
+
+  z = (x*y)**2
+  dzx = x.upper**2*y.nominal**2 - z.nominal
+  dzy = x.nominal**2*y.upper**2 - z.nominal
+  dz = (dzx**2 + dzy**2)**0.5
+  assert Close( z.nominal, x.nominal**2*y.nominal**2, 0.001 )
+  assert Close( z.uncertainty, dz, 0.001 )
+
+  z = x**0
+  assert Close( z.nominal, 1, 0.001 )
+  assert Close( z.uncertainty, 0, 0.001 )
+
+  z = (x*y)**0
+  assert Close( z.nominal, 1, 0.001 )
+  assert Close( z.uncertainty, 0, 0.001 )
+
+
+
+
+

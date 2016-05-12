@@ -258,6 +258,11 @@ class _UncertainQuantity(object):
   def __rdiv__(self,other):
     return self._CONVENTION.__propagate_error__( operator.__div__, (other,self) )
 
+  def __pow__(self,other):
+    return self._CONVENTION.__propagate_error__( operator.__pow__, (self,other) )
+
+
+
   def consistent(self,other):
     return self._CONVENTION.consistent( self, other )
 

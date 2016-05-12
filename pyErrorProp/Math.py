@@ -13,7 +13,6 @@ import math
 # we need a way to get at the user's registries...
 
 # here is an example of how we would "manually" wrap sin
-
 def manual_sin(x):
   f = x._REGISTRY.wraps( x._REGISTRY(""), x._REGISTRY("radian"), False )(math.sin)
   try:
@@ -23,6 +22,7 @@ def manual_sin(x):
 
   return f(x)
 
+# this will wrap functions for us
 def WrapNumFunc( func, ounit, iunit ):
   '''Wraps a numerical function to add support for units and uncertainty.'''
 
