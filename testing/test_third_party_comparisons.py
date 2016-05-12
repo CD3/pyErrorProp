@@ -137,8 +137,46 @@ def test_uncertainties_comparison_speed():
   z = ((x - y)/(x - w))*w
   zz = ((xx - yy)/(xx - ww))*ww
 
-  print timeit.timeit( lambda : ((x - y)/(x - w))*w, number = 20 )
-  print timeit.timeit( lambda : ((xx - yy)/(xx - ww))*ww, number = 20 )
+  t_us = timeit.timeit( lambda : (((x - y)/(x - w))*w).uncertainty , number = 200 )
+  t_unc = timeit.timeit( lambda : (((xx - yy)/(xx - ww))*ww).std_dev, number = 200 )
+
+  assert t_us > t_unc
+
+  assert Close( z.nominal.magnitude    , zz.nominal_value)
+  assert Close( z.uncertainty.magnitude, zz.std_dev)
+
+  corr = uconv.correlations.matrix( x,y,z,w )
+  ccorr = uncertainties.correlation_matrix( [xx,yy,zz,ww] )
+
+  for i in range(4):
+    for j in range(4):
+      assert Close( corr(i,j), ccorr[i][j], 0.1 )
+
+def test_uncertainties_comparison_user_defined_funcs():
+  import uncertainties
+  from uncertainties import ufloat
+
+  x = UQ_( '15. +/- 0.1 m' )
+  y = UQ_( '25. +/- 0.2 m' )
+  w = UQ_( '35. +/- 0.3 m' )
+
+  xx = ufloat( 15, 0.1 )
+  yy = ufloat( 25, 0.2 )
+  ww = ufloat( 35, 0.3 )
+
+  def calc(x,y,w):
+    return ((x - y)/(x - w))*w
+
+  f = uconv.WithError(calc)
+  ff = uncertainties.wrap(calc)
+
+  z = f(x,y,w)
+  zz = ff(xx,yy,ww)
+
+  t_us  = timeit.timeit( lambda :  f( x, y, w), number = 200 )
+  t_unc = timeit.timeit( lambda : ff(xx,yy,ww), number = 200 )
+
+  assert t_us > t_unc
 
   assert Close( z.nominal.magnitude    , zz.nominal_value)
   assert Close( z.uncertainty.magnitude, zz.std_dev)
