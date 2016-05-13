@@ -1,4 +1,4 @@
-update: TechnicalGuide.pdf
+update: TechnicalDetails.pdf
 
-TechnicalGuide.pdf: TechnicalGuide.md
+TechnicalDetails.pdf: TechnicalDetails.md
 	madoko --pdf $<; mv out/$@ ./
