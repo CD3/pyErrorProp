@@ -14,5 +14,5 @@ setup(name='pyErrorProp',
       url='https://github.com/CD3/pyErrorProp',
       license="MIT License",
       platforms=["any"],
-      py_modules=['pyErrorProp']
+      packages=['pyErrorProp']
      )

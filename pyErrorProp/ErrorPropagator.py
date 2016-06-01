@@ -1,7 +1,10 @@
 import copy
+from .util import *
 
 
-# utility functions
+#########
+# utils 
+#########
 
 def nominal( x ):
   '''Return the nominal value of an uncertainty quantity.
@@ -57,6 +60,7 @@ def lower( x ):
 
 
 
+
 class ErrorPropagator(object):
   def __init__(self, func = None):
     self.func = func
@@ -103,7 +107,6 @@ class PositiveIntervalPropagator( ErrorPropagator ):
     super( PositiveIntervalPropagator, self ).__init__( *args, **kargs )
 
   def __propagate_uncertainties__(self, func, *args, **kargs):
-
     # get nominal values for each argument
     nominal_args = []
     for i,a in enumerate(args):
@@ -140,44 +143,7 @@ class PositiveIntervalPropagator( ErrorPropagator ):
     return (nominal_value, uncertainties)
 
 
-# class AutoErrorPropagator( PositiveIntervalPropagator ):
-  # '''An error propagator that automatically propagates error based on a given number of significant figures. For example,
-     # by default the propagator determines the uncertainy in the result by assuming all input parameters
-     # have 3 significant figures and the last significant figure is uncertain by plus/minus 1.'''
-  # def __init__(self, sigfigs = 3, *args, **kargs):
-    # self.sigfigs = sigfigs
-    # super( AutoErrorPropagator, self ).__init__( *args, **kargs )
-
-  # def __propagate_uncertainties__(self, func, *args, **kargs):
-    # new_args = []
-    # for i,a in enumerate(args):
-      # if not isinstance( a, pint.measurement._Measurement ):
-        # a = make_sigfig_UQ( a, self.sigfigs )
-      # new_args.append( a )
-
-    # new_kargs = dict()
-    # for k,v in kargs.items():
-      # if not isinstance( v, pint.measurement._Measurement ):
-        # v = make_sigfig_UQ( v, self.sigfigs )
-      # new_kargs[k] = v
-
-    # value,uncertainties = super( AutoErrorPropagator, self).__propagate_uncertainties__( *new_args, **new_kargs )
-
-    # return value, uncertainties
-
 def WithError(func):
   propagator = PositiveIntervalPropagator()
   propagator.func = func
   return propagator
-
-def WithAutoError(sigfigs=3):
-  propagator = AutoErrorPropagator()
-  propagator.sigfigs = sigfigs
-
-  def Decorator(func):
-    propagator.func = func
-    return propagator
-
-  return Decorator
-
-

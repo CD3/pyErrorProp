@@ -5,12 +5,12 @@ from pint import UnitRegistry
 
 from .ErrorPropagator import PositiveIntervalPropagator, nominal, uncertainty
 from .CorrelationRegistry import CorrelationRegistry
+from .util import *
 
 UR = UnitRegistry()
 EP = PositiveIntervalPropagator
 
 class UncertaintyConvention(object):
-
   def __init__(self, _UR = UR, _EP = EP):
     self._UNITREGISTRY = _UR
     self._ERRORPROPAGATOR = _EP
@@ -119,7 +119,80 @@ class UncertaintyConvention(object):
 
     return wrapper
 
+  def WithAutoError(self,sigfigs=3):
+    '''Automatically calculate uncertainty in a function return value assuming all arguments are uncertain
+       to a given significant figure.
+       
+       CORRELATIONS ARE IGNORED.'''
 
+    def Decorator(func):
+
+      def wrapper(*args,**kwargs):
+        propagator = AutoErrorPropagator(self,sigfigs)
+        zbar,dzs = propagator.__propagate_uncertainties__(func,*args,**kwargs)
+        dzs = [ ( dzs[k], kwargs[k] if k in kwargs else args[k] ) for k in dzs ]
+        creg = self._CORRREGISTRY
+
+        # calculate the total uncertainty
+        dz = 0
+        for dzx,x in dzs:
+          for dzy,y in dzs:
+            dz += creg.correlation(x,y) * dzx * dzy
+        dz = dz**0.5
+
+        z = self.UncertainQuantity(zbar,dz)
+
+        return z
+
+
+
+      return wrapper 
+
+    return Decorator
+
+
+
+
+  def make_sigfig_UQ( self, nom, sigfigs ):
+    '''Create and return uncertain quantity from a quantity and number of sigfigs. The
+    uncertain quantity will have an error that corresponds to the last
+    significant figure plus or minus 1.'''
+    nom = nominal( nom )
+    # round to correct number of sigfigs
+    val = sigfig_round( nom, sigfigs )
+    # get sigfig decimal postion
+    pos = get_sigfig_decimal_pos( magof(nom), sigfigs )
+    # the uncertainty is the last significant figure plus-or-minus 1
+    unc = self.UncertainQuantity.Quantity(pow(10,-pos),unitsof(nom))
+
+    return self.UncertainQuantity(val, unc)
+
+
+class AutoErrorPropagator( PositiveIntervalPropagator ):
+  '''An error propagator that automatically propagates error based on a given number of significant figures. For example,
+     by default the propagator determines the uncertainy in the result by assuming all input parameters
+     have 3 significant figures and the last significant figure is uncertain by plus/minus 1.'''
+  def __init__(self, uconv, sigfigs = 3, *args, **kargs):
+    self.uconv = uconv
+    self.sigfigs = sigfigs
+    super( AutoErrorPropagator, self ).__init__( *args, **kargs )
+
+  def __propagate_uncertainties__(self, func, *args, **kargs):
+    new_args = []
+    for i,a in enumerate(args):
+      if not a.__class__.__name__ == 'UncertainQuantity':
+        a = self.uconv.make_sigfig_UQ( a, self.sigfigs )
+      new_args.append( a )
+
+    new_kargs = dict()
+    for k,v in kargs.items():
+      if notva.__class__.__name__ == 'UncertainQuantity':
+        v = self.uconv.make_sigfig_UQ( v, self.sigfigs )
+      new_kargs[k] = v
+
+    value,uncertainties = super( AutoErrorPropagator, self).__propagate_uncertainties__( func, *new_args, **new_kargs )
+
+    return value, uncertainties
 
 
 

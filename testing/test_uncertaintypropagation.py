@@ -168,6 +168,56 @@ def test_sum():
   assert Close( x.nominal.magnitude    , 2 )
   assert Close( x.uncertainty.magnitude, (0.1**2 + 0.2**2 + 0.3**2)**0.5 )
 
+def test_neg():
+  x = UQ_( '1.5 m +/- 1 cm' )
+  y = 2*x
+
+  z = -x
+
+  assert Close( y.nominal,     2*x.nominal, 0.001 )
+  assert Close( y.uncertainty, 2*x.uncertainty, 0.001 )
+
+  assert Close( z.nominal,      -x.nominal, 0.001 )
+  assert Close( z.uncertainty,   x.uncertainty, 0.001 )
+
+  assert x.correlation(y) ==  1
+  assert y.correlation(x) ==  1
+  assert x.correlation(z) == -1
+  assert z.correlation(x) == -1
+  assert z.correlation(y) == -1
+  assert y.correlation(z) == -1
+
+def test_abs():
+  x = UQ_( '1.5 m +/- 1 cm' )
+  y = 2*x
+
+  z = abs(x)
+
+  assert Close( z.nominal,       x.nominal, 0.001 )
+  assert Close( z.uncertainty,   x.uncertainty, 0.001 )
+
+  assert x.correlation(z) ==  1
+  assert z.correlation(x) ==  1
+  assert z.correlation(y) ==  1
+  assert y.correlation(z) ==  1
+
+
+
+  x = UQ_( '-1.5 m +/- 1 cm' )
+  y = 2*x
+
+  z = abs(x)
+
+  assert Close( z.nominal,      -x.nominal, 0.001 )
+  assert Close( z.uncertainty,   x.uncertainty, 0.001 )
+
+  assert x.correlation(z) == -1
+  assert z.correlation(x) == -1
+  assert z.correlation(y) == -1
+  assert y.correlation(z) == -1
+  
+  
+
 def test_correlation():
   x = UQ_( '2.5 +/- 0.5 m' )
   y = UQ_( '2.5 +/- 0.5 m' )
@@ -254,3 +304,29 @@ def test_power():
 
 
 
+def test_autoerrorprop():
+  x = Q_(10,'m')
+  y = Q_(20,'m')
+
+  @uconv.WithError
+  def area1(x,y):
+    return x*y
+
+  a = area1(x,y)
+
+  assert Close( a.nominal,x*y )
+  assert a.uncertainty.magnitude == 0
+
+  @uconv.WithAutoError()
+  def area2(x,y):
+    return x*y
+
+  a = area2(x,y)
+
+  na = x*y
+  dax = (x + Q_(.1,'m'))*y - na
+  day = (y + Q_(.1,'m'))*x - na
+  da = (dax**2 + day**2)**0.5
+
+  assert Close( a.nominal,x*y )
+  assert a.uncertainty == da
