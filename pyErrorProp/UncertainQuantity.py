@@ -228,12 +228,13 @@ class _UncertainQuantity(object):
     self._unit = self._nom.units
 
   def __neg__(self):
-    uq = self.make( -self.nominal, self.uncertainty )
-    uq.correlated(self,-1)
-    # TODO: add correlations for all variables that self
-    # is correlated to
+    return self._CONVENTION.__propagate_error__( operator.__sub__, (0,self) )
 
-    return uq
+  def __abs__(self):
+    if self.nominal.magnitude >= 0:
+      return self._CONVENTION.__propagate_error__( operator.__add__, (0,self) )
+    else:
+      return self._CONVENTION.__propagate_error__( operator.__sub__, (0,self) )
 
   def __add__(self,other):
     return self._CONVENTION.__propagate_error__( operator.__add__, (self,other) )
@@ -244,6 +245,7 @@ class _UncertainQuantity(object):
     return self._CONVENTION.__propagate_error__( operator.__sub__, (self,other) )
 
   def __rsub__(self,other):
+    return self._CONVENTION.__propagate_error__( operator.__sub__, (other,self) )
     return -self.__sub__(other)
 
   def __mul__(self,other):
