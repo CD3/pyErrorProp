@@ -30,6 +30,26 @@ def test_simple_error_prop():
   assert Close( v , Q_(nominal_value,'m/s') )
   assert Close( dv, Q_(uncertainty_value,'m/s') )
 
+
+def test_simple_error_prop_with_kwargs():
+
+  x = UQ_(2.5, 0.1, 'm')
+  t = Q_(33,'ms').plus_minus(0.05,relative=True)
+
+  @WithError
+  def velocity(x,t):
+    return x/t
+
+  v,dv = velocity(x=x,t=t)
+
+  nominal_value = 2.5/33e-3
+  unc = [ (2.5+0.1)/33e-3 - nominal_value
+        ,2.5/(33e-3*(1 + 0.05)) - nominal_value
+        ]
+  uncertainty_value = numpy.sqrt( sum( [ x*x for x in unc ] ) )
+  assert Close( v , Q_(nominal_value,'m/s') )
+  assert Close( dv, Q_(uncertainty_value,'m/s') )
+
 def test_doc_example_1():
     # print()
 

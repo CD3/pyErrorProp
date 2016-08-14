@@ -317,16 +317,28 @@ def test_autoerrorprop():
   assert Close( a.nominal,x*y )
   assert a.uncertainty.magnitude == 0
 
+
+  a = area1(x=y,y=x)
+
+  assert Close( a.nominal,x*y )
+  assert a.uncertainty.magnitude == 0
+
   @uconv.WithAutoError()
   def area2(x,y):
     return x*y
 
-  a = area2(x,y)
 
   na = x*y
   dax = (x + Q_(.1,'m'))*y - na
   day = (y + Q_(.1,'m'))*x - na
   da = (dax**2 + day**2)**0.5
+
+  a = area2(x,y)
+
+  assert Close( a.nominal,x*y )
+  assert a.uncertainty == da
+
+  a = area2(x=y,y=x)
 
   assert Close( a.nominal,x*y )
   assert a.uncertainty == da
