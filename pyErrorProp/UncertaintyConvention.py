@@ -186,7 +186,7 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
 
     new_kargs = dict()
     for k,v in kargs.items():
-      if notva.__class__.__name__ == 'UncertainQuantity':
+      if not v.__class__.__name__ == 'UncertainQuantity':
         v = self.uconv.make_sigfig_UQ( v, self.sigfigs )
       new_kargs[k] = v
 
