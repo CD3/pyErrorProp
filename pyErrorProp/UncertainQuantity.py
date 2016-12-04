@@ -32,6 +32,16 @@ class _UncertainQuantity(object):
     if str(unc.units) == 'percent':
       unc = nom*unc.to('')
 
+    # handle offset units
+    # uncertainties should be "delta" units
+    # pint seems to automatically convert any offset units to deltas
+    # for derived units, so for now we will just try to convert
+    # to a delta unit if possible.
+    try:
+      unc = self.Quantity(unc.magnitude, self._delta(unc.units) )
+    except:
+      pass
+
     # make sure units on unc and nom are compatible
     try:
       tmp = nom + unc
@@ -61,8 +71,16 @@ class _UncertainQuantity(object):
 
   @property
   def uncertainty(self):
-    return self._unc.to(self._unit)
+    if self._is_a_delta( self._unc ):
+      return self._unc.to(self._delta(self._unit))
+    else:
+      return self._unc.to(self._unit)
   error = uncertainty
+
+  @property
+  def relative_uncertainty(self):
+    return self.uncertainty/self.nominal
+  relative_error = relative_uncertainty
 
   @property
   def upper(self):
@@ -88,9 +106,14 @@ class _UncertainQuantity(object):
 
 
   def __repr__(self):
-      return "<UncertainQauntity({0:.2f}, {1:.2f}, {2})>".format(self._nom.to(self._unit).magnitude,
-                                                                 self._unc.to(self._unit).magnitude,
-                                                                 self._unit)
+    template = "<UncertainQauntity({0:.2f}, {1:.2f}, {2})>" 
+    nom = self._nom.to(self._unit).magnitude
+    if self._is_a_delta( self._unc ):
+      unc = self._unc.to(self._delta(self._unit)).magnitude
+    else:
+      unc = self._unc.to(self._unit).magnitude
+
+    return template.format(nom,unc,self._unit)
 
   def __format__(self, fmtspec):
     # see if formatting is handled by the uncertainty convention
@@ -217,10 +240,17 @@ class _UncertainQuantity(object):
     return (nom,unc)
 
 
+  def _delta(self,unit):
+    return 'delta_'+str(unit)
 
+  def _is_a_delta(self,q):
+    return len(q._units) == 1 and str(q.units).startswith('delta_')
 
   def to(self,unit):
-    return self.make( self._nom.to(unit), self._unc.to(unit) )
+    if self._is_a_delta( self._unc ):
+      return self.make( self._nom.to(unit), self._unc.to(self._delta(unit)) )
+    else:
+      return self.make( self._nom.to(unit), self._unc.to(unit) )
 
   def ito(self,unit):
     self._nom.ito(unit)

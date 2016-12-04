@@ -342,3 +342,32 @@ def test_autoerrorprop():
 
   assert Close( a.nominal,x*y )
   assert a.uncertainty == da
+
+def test_temperature_error_propatation():
+
+  @uconv.WithAutoError()
+  def temp(T):
+    return T
+
+  T = Q_(300,'degK')
+  Temp = temp(T)
+
+  assert Close( Temp.nominal.magnitude, 300 )
+  assert Close( Temp.error.magnitude, 1 )
+
+
+  T = Q_(300,'degF')
+  Temp = temp(T)
+
+  assert Close( Temp.nominal.magnitude, 300 )
+  assert Close( Temp.error.magnitude, 1 )
+
+  @uconv.WithAutoError()
+  def energy(f,n,R,T):
+    T = T.to('degK')
+    return f*n*R*T/2
+
+  E = energy( 1, Q_(1,'mol'), Q_(1,'J/mol/degC'), Q_(212,'degF') )
+  assert Close( E.nominal.magnitude    , 373/2 )
+
+

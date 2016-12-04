@@ -180,4 +180,15 @@ def test_correlation():
   assert x.correlation(z) == -0.8
   assert z.correlation(x) == -0.8
 
+def test_offset_units():
+
+  T = UQ_( Q_(212,'degF'), Q_(1,'degF') )
+
+  assert Close( T.upper.magnitude, 213 )
+  assert Close( T.lower.magnitude, 211 )
+
+  T2 = T.to('degC')
+
+  assert Close( T2.nominal.magnitude, 100 )
+  assert Close( T2.error.magnitude, 0.555)
 

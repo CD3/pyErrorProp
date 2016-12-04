@@ -107,7 +107,7 @@ class UncertaintyConvention(object):
 
     q = self.UncertainQuantity( nominal, std_err )
     if round:
-      q = self.round( q )
+      q = self.__round__( q )
 
     return q
 
@@ -150,9 +150,6 @@ class UncertaintyConvention(object):
 
     return Decorator
 
-
-
-
   def make_sigfig_UQ( self, nom, sigfigs ):
     '''Create and return uncertain quantity from a quantity and number of sigfigs. The
     uncertain quantity will have an error that corresponds to the last
@@ -166,6 +163,15 @@ class UncertaintyConvention(object):
     unc = self.UncertainQuantity.Quantity(pow(10,-pos),unitsof(nom))
 
     return self.UncertainQuantity(val, unc)
+
+  def percent_error( self, expected, measured ):
+    return self.UncertainQuantity.Quantity( abs( (nominal(expected) - nominal(measured) ) / nominal(expected) ) ).to('percent')
+
+  def percent_difference( self, a, b ):
+    return self.UncertainQuantity.Quantity( 2*abs( (nominal(a) - nominal(b) ) / (nominal(a) + nominal(b)) ) ).to('percent')
+
+  def agree(self, a, b):
+    return self.z(a,b) <= 2
 
 
 class AutoErrorPropagator( PositiveIntervalPropagator ):
