@@ -1,4 +1,4 @@
-#pyErrorProp
+# pyErrorProp
 
 `pyErrorProp` is a python module that performs various calculations with
 uncertain quantities, including error propagation.  The module uses `pint` to
