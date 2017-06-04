@@ -59,9 +59,7 @@ def test_decimal_support():
   x = UQ_( Q_('1.50','m'), Q_('0.03','m') )
   y = UQ_( Q_(1.50,'m'), Q_(0.03,'m') )
 
-
 def test_formatted_output():
-
   x = UQ_( Q_('1.5','m'), Q_('7','cm') )
 
   xstr = '{:.1fLx}'.format(x)
@@ -117,9 +115,7 @@ def test_formatted_output():
   xstr = '{:f}'.format(x)
   assert xstr == r'9.877 +/- 0.012 meter'
 
-
 def test_string_parsing():
-
   t = UQ_.parse_string("1.0 +/- 0.01 m")
   assert t[0] == '1.0 m'
   assert t[1] == '0.01 m'
@@ -153,7 +149,6 @@ def test_errors():
 
 
 def test_comparisons():
-
   x = UQ_(20, 3, 'm')
   y = UQ_(25, 4, 'm')
   z = UQ_(31, 4, 'm')
@@ -192,3 +187,55 @@ def test_offset_units():
   assert Close( T2.nominal.magnitude, 100 )
   assert Close( T2.error.magnitude, 0.555)
 
+def test_mpmath_support():
+  try:
+    import mpmath
+  except:
+    return
+  
+  x = UQ_( mpmath.mpf('1.5'), mpmath.mpf('0.01'), 'm' )
+  assert x.__repr__() == "<UncertainQauntity(1.5, 0.01, meter)>"
+  assert "{:Lx}".format(x) == r"\SI[]{1.500 +- 0.010}{\meter}"
+  assert "{:.3Lx}".format(x) == r"\SI[]{1.5000 +- 0.0100}{\meter}"
+
+def test_normalization():
+  x = UQ_( '1.23456789 +/- 0.0987654321 m' )
+  xtype = type(x.nominal.magnitude)
+
+  x = x.normalize()
+
+  assert x.nominal.magnitude == 1.2
+  assert x.error.magnitude == 0.1
+  assert type(x.nominal.magnitude) == xtype
+
+
+
+  x = UQ_( '1.23456789', '0.0987654321', 'm' )
+  xtype = type(x.nominal.magnitude)
+
+  x = x.normalize()
+
+  assert x.nominal.magnitude == 1.2
+  assert x.error.magnitude == 0.1
+  assert type(x.nominal.magnitude) == xtype
+
+  x = UQ_( Q_('1.23456789','m'), Q_('0.0987654321','m') )
+  xtype = type(x.nominal.magnitude)
+
+  x = x.normalize()
+
+  assert x.nominal.magnitude == 1.2
+  assert x.error.magnitude == 0.1
+  assert type(x.nominal.magnitude) == xtype
+
+  
+  x = UQ_( Q_('1.23456789','m'), Q_('0.0987654321','m') )
+  xtype = type(x.nominal.magnitude)
+
+  x = x.normalize(2)
+
+  assert x.error.magnitude == 0.099
+  assert x.nominal.magnitude == 1.235
+  assert type(x.nominal.magnitude) == xtype
+
+  

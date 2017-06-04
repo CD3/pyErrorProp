@@ -12,7 +12,6 @@ UQ_ = ureg.Measurement
 
 
 def test_simple_error_prop():
-
   x = UQ_(2.5, 0.1, 'm')
   t = Q_(33,'ms').plus_minus(0.05,relative=True)
 
@@ -30,9 +29,7 @@ def test_simple_error_prop():
   assert Close( v , Q_(nominal_value,'m/s') )
   assert Close( dv, Q_(uncertainty_value,'m/s') )
 
-
 def test_simple_error_prop_with_kwargs():
-
   x = UQ_(2.5, 0.1, 'm')
   t = Q_(33,'ms').plus_minus(0.05,relative=True)
 
@@ -49,6 +46,15 @@ def test_simple_error_prop_with_kwargs():
   uncertainty_value = numpy.sqrt( sum( [ x*x for x in unc ] ) )
   assert Close( v , Q_(nominal_value,'m/s') )
   assert Close( dv, Q_(uncertainty_value,'m/s') )
+
+def test_offset_units():
+  pass
+  # todo: test @WithError function that takes temperature as an argument.
+  # todo: test @WithError function that takes temperature difference as an argument.
+  # todo: test @WithAutoError function that takes temperature as an argument.
+  # todo: test @WithAutoError function that takes temperature difference as an argument.
+
+
 
 def test_doc_example_1():
     # print()

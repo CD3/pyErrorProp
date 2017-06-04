@@ -1,4 +1,4 @@
-import math, decimal, copy
+import math, decimal, copy, sys
 
 
 
@@ -48,6 +48,12 @@ def sigfig_round( v, n = 2 ):
   # handle Decimal type special so we don't lose any digits
   if isinstance( v, decimal.Decimal ):
     return (v*10**nd).quantize(decimal.Decimal('1')) / 10**nd
+
+  # handle mpmath.mpf type special so we don't lose any digits
+  if 'mpmath' in sys.modules:
+    import mpmath as mp
+    if isinstance( v, mp.mpf ):
+      return mp.mpf( mp.nstr( v, n ) )
 
   # if v is an int, we need to make it a float
   if isinstance( v, int ):

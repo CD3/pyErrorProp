@@ -28,7 +28,6 @@ def test_addition():
   assert Close( z.value, nx + ny, 0.001 )
   assert Close( z.error, (dx**2 + dy**2)**0.5, 0.001 )
 
-
 def test_subtraction():
   nx = Q_(1.5,'m')
   dx = Q_(1,'cm')
@@ -46,7 +45,6 @@ def test_subtraction():
 
   assert Close( z.value, nx - ny, 0.001 )
   assert Close( z.error, (dx**2 + dy**2)**0.5, 0.001 )
-
 
 def test_multiplication():
   nx = Q_(1.5,'m')
@@ -88,9 +86,7 @@ def test_division():
   assert Close( z.value, nz,  0.001 )
   assert Close( z.error, (dzx**2 + dzy**2)**0.5, 0.001 )
 
-
 def test_sum():
-
   x = UQ_( 2, 0.2, 'm' )
 
   @WithError
@@ -102,5 +98,3 @@ def test_sum():
 
   assert Close( z.value.magnitude, 20 )
   assert Close( z.error.magnitude, 2.0 )
-
-

@@ -1,5 +1,6 @@
-import operator, re, decimal, copy
+import operator, re, decimal, copy, sys
 import pint
+
 
 ureg = pint.UnitRegistry()
 
@@ -10,7 +11,6 @@ class _UncertainQuantity(object):
   Quantity = _REGISTRY.Quantity
 
   def __init__( self, nom, unc = None, unit = None ):
-
     if unc is None and unit is None and isinstance(nom,(str,unicode)):
       nom,unc = _UncertainQuantity.parse_string( nom )
 
@@ -94,6 +94,40 @@ class _UncertainQuantity(object):
   def interval(self):
     return 2*self.uncertainty
 
+  def normalize(self,n=None):
+    '''Return a normalized uncertain quantatiy with an uncertainty
+       rounded to the requested number of significant figures, and
+       the nominal value rounded to the same decimal position as the
+       uncertainty.'''
+
+    # __format__ already does what we need, so we'll just format
+    # ourself and use parse_string to get the nominal and uncertainty values.
+
+    fmtstr = "{"
+    if n is not None:
+      fmtstr += ":."+str(n)
+    fmtstr += "}"
+
+    nom,unc = self.parse_string( fmtstr.format(self) )
+
+    toks = nom.split()
+    nomv = toks[0]
+    nomu = " ".join(toks[1:])
+    nomt = type(self._nom.magnitude)
+
+    toks = unc.split()
+    uncv = toks[0]
+    uncu = "".join(toks[1:])
+    unct = type(self._unc.magnitude)
+
+    nom = self.Quantity(nomt(nomv),nomu)
+    unc = self.Quantity(unct(uncv),uncu)
+
+    q = self.make(nom,unc)
+
+    return q
+
+    
 
   def correlated( self, var, corr ):
     '''Set the correlation between another variable.'''
@@ -106,14 +140,27 @@ class _UncertainQuantity(object):
 
 
   def __repr__(self):
-    template = "<UncertainQauntity({0:.2f}, {1:.2f}, {2})>" 
     nom = self._nom.to(self._unit).magnitude
     if self._is_a_delta( self._unc ):
       unc = self._unc.to(self._delta(self._unit)).magnitude
     else:
       unc = self._unc.to(self._unit).magnitude
 
-    return template.format(nom,unc,self._unit)
+    template = "<UncertainQauntity({0}, {1}, {2})>" 
+    if 'mpmath' in sys.modules:
+      import mpmath
+      if not isinstance(nom, mpmath.mpf):
+        nom = mpmath.mpmathify(nom)
+      if not isinstance(unc, mpmath.mpf):
+        unc = mpmath.mpmathify(unc)
+
+      nom_s = mpmath.nstr(nom)
+      unc_s = mpmath.nstr(unc)
+    else:
+      nom_s = "{f}".format(nom)
+      unc_s = "{f}".format(unc)
+
+    return template.format(nom_s,unc_s,self._unit)
 
   def __format__(self, fmtspec):
     # see if formatting is handled by the uncertainty convention
@@ -155,7 +202,7 @@ class _UncertainQuantity(object):
       prec_given = True
       prec = match.group(1)
     prec = int(prec)
-    prec -= 1
+    prec -= 1 # number of sigfigsis one more than precision.
     if prec < 0:
       prec = 0
 
@@ -166,9 +213,15 @@ class _UncertainQuantity(object):
     # we have to figure out what precision (places after decimal) corresponds to the given
     # significant figure.
     # 
-    # Rather than handle all of this manually, we'll use the Decimal class.
-    nom = decimal.Decimal( self.nominal.magnitude )
-    unc = decimal.Decimal( self.uncertainty.magnitude )
+    # We don't want to do this manually. we'll use the Decimal module instead.
+    nom = self.nominal.magnitude
+    unc = self.uncertainty.magnitude
+    if 'mpmath' in sys.modules:
+      import mpmath
+      nom = mpmath.nstr(nom)
+      unc = mpmath.nstr(unc)
+    nom = decimal.Decimal( nom )
+    unc = decimal.Decimal( unc )
     if prec_given == False and prec == 0 and ('{:e}'.format(unc))[0] == '1':
       # special case: if leading significant figure is 1, then take two
       prec += 1
@@ -211,14 +264,14 @@ class _UncertainQuantity(object):
     nomt = nom.split()
     if len(nomt)>1:
       nomv = nomt[0]
-      nomu = nomt[1]
+      nomu = " ".join(nomt[1:])
 
     uncv = unc
     uncu = ''
     unct = unc.split()
     if len(unct)>1:
       uncv = unct[0]
-      uncu = unct[1]
+      uncu = " ".join(unct[1:])
 
     if nomu == '':
       nomu = uncu

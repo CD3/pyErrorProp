@@ -235,14 +235,20 @@ def build_uncertainquantity_class(conv, ureg):
   UncertainQuantity.Quantity.__div__ = disable_for_UQ( UncertainQuantity.Quantity.__div__ )
 
 
-  # add auto support for Decimal type to quantity
+  # add auto support for arbitrary precision types to the Quantity class
   def wrap(f):
     def new_f(cls,value,units=None):
       if isinstance(value,(str,unicode)):
         try:
-          value = decimal.Decimal(value)
+          # try to use the mpmath module first
+          import mpmath
+          value = mpmath.mpf(value)
         except:
-          pass
+          # otherwise use the decimal module
+          try:
+            value = decimal.Decimal(value)
+          except:
+            pass
       return f(cls,value,units)
 
     return new_f

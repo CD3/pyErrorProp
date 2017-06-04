@@ -7,6 +7,11 @@ import decimal
 from Utils import Close
 import pytest
 
+try:
+  import mpmath
+except:
+  pass
+
 
 def test_sigfig_rounding():
 
@@ -55,7 +60,24 @@ def test_sigfig_rounding():
   D = decimal.Decimal
   for v in values:
     assert Close( D(v[1]), sigfig_round(D(v[0]),1), 0.00001 )
-    # assert Close( D(v[2]), sigfig_round(D(v[0]),2), 0.00001 )
+    assert Close( D(v[2]), sigfig_round(D(v[0]),2), 0.00001 )
+    assert  D(v[1]) == sigfig_round(D(v[0]),1)
+    assert  D(v[2]) == sigfig_round(D(v[0]),2)
+
+  if 'mpmath' in sys.modules:
+
+    x = mpmath.mpf('1.23456789')
+
+    assert sigfig_round( x, 2 ) == mpmath.mpf('1.2')
+    assert sigfig_round( x, 3 ) == mpmath.mpf('1.23')
+
+  F = mpmath.mpf
+  for v in values:
+    assert F(v[1]) == sigfig_round(F(v[0]),1)
+    assert F(v[2]) == sigfig_round(F(v[0]),2)
+
+
+
 
 def test_sf_dec_count():
   assert get_sigfig_decimal_pos(1.2345, 1) == 0

@@ -9,8 +9,12 @@ UQ_ = uconv.UncertainQuantity
 Q_  = UQ_.Quantity
 
 def test_uncertainties_comparison_general():
-  import uncertainties
-  from uncertainties import ufloat
+  try:
+    import uncertainties
+    from uncertainties import ufloat
+  except:
+    return
+    
   # compare error propagation.
   x = UQ_( '2.5 +/- 0.5 m' )
   y = UQ_( '2.5 +/- 0.5 m' )
@@ -102,8 +106,12 @@ def test_uncertainties_comparison_general():
   assert w.correlation(x) == corr[3][0]
 
 def test_uncertainties_comparison_correlations():
-  import uncertainties
-  from uncertainties import ufloat
+  try:
+    import uncertainties
+    from uncertainties import ufloat
+  except:
+    return
+
   # compare error propagation.
   x = UQ_( '2.0 +/- 0.5 m' )
   y = UQ_( '3.5 +/- 0.25 m' )
@@ -123,8 +131,11 @@ def test_uncertainties_comparison_correlations():
   zz = xx*xx + xx*yy
 
 def test_uncertainties_comparison_speed():
-  import uncertainties
-  from uncertainties import ufloat
+  try:
+    import uncertainties
+    from uncertainties import ufloat
+  except:
+    return
 
   x = UQ_( '15. +/- 0.1 m' )
   y = UQ_( '25. +/- 0.2 m' )
@@ -153,8 +164,11 @@ def test_uncertainties_comparison_speed():
       assert Close( corr(i,j), ccorr[i][j], 0.1 )
 
 def test_uncertainties_comparison_user_defined_funcs():
-  import uncertainties
-  from uncertainties import ufloat
+  try:
+    import uncertainties
+    from uncertainties import ufloat
+  except:
+    return
 
   x = UQ_( '15. +/- 0.1 m' )
   y = UQ_( '25. +/- 0.2 m' )
@@ -188,8 +202,11 @@ def test_uncertainties_comparison_user_defined_funcs():
     for j in range(4):
       assert Close( corr(i,j), ccorr[i][j], 0.1 )
 
-
 def test_pint_measurement_comparison_speed():
+  try:
+    import uncertainties
+  except:
+    return
   import pint
   ureg = pint.UnitRegistry()
 
@@ -210,11 +227,13 @@ def test_pint_measurement_comparison_speed():
   assert Close( z.nominal.magnitude, zz.value.magnitude )
   # assert Close( z.uncertainty.magnitude, zz.error.magnitude )
 
-
-
 def test_mcerp_comparison():
-  import mcerp
-  from mcerp import N
+  try:
+    import mcerp
+    from mcerp import N
+  except:
+    return
+
   # bump up the number of samples that will be used
   mcerp.npts = 100000
   # compare error propagation.
