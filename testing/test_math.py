@@ -43,3 +43,66 @@ def test_wrapping():
 
   # with pytest.raises(AttributeError):
     # sin = Math.WrapNumFunc( 'sn', 'radian', '' )
+
+def test_unit_aware_functions():
+
+  qfuncs = Math.wrap_functions(Q_._REGISTRY)
+
+  x = qfuncs.sin(Q_(90,'degree'))
+  assert isinstance( x, Q_ )
+  assert x.units == ""
+  assert x.magnitude == Approx(1)
+
+  x = qfuncs.cos(Q_(180,'degree'))
+  assert isinstance( x, Q_ )
+  assert x.units == ""
+  assert x.magnitude == Approx(-1)
+
+  x = qfuncs.tan(Q_(45,'degree'))
+  assert isinstance( x, Q_ )
+  assert x.units == ""
+  assert x.magnitude == Approx(1)
+
+
+
+  x = qfuncs.asin(Q_(1,'')).to('degree')
+  assert isinstance( x, Q_ )
+  assert x.units == "degree"
+  assert x.magnitude == Approx(90)
+
+  x = qfuncs.acos(Q_(-1,'')).to('degree')
+  assert isinstance( x, Q_ )
+  assert x.units == "degree"
+  assert x.magnitude == Approx(180)
+
+  x = qfuncs.atan(Q_(1,'')).to('degree')
+  assert isinstance( x, Q_ )
+  assert x.units == "degree"
+  assert x.magnitude == Approx(45)
+
+  assert isinstance( x, Q_ )
+  assert x.units == "degree"
+  assert x.magnitude == Approx(45)
+
+
+
+  x = qfuncs.exp(Q_(1,''))
+  assert isinstance( x, Q_ )
+  assert x.units == ""
+  assert x.magnitude == Approx(math.e)
+
+  x = qfuncs.log(Q_(math.e,''))
+  assert isinstance( x, Q_ )
+  assert x.units == ""
+  assert x.magnitude == Approx(1)
+
+  x = qfuncs.log10(Q_(10.,''))
+  assert isinstance( x, Q_ )
+  assert x.units == ""
+  assert x.magnitude == Approx(1)
+
+
+
+
+
+

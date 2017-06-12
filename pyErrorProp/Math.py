@@ -7,16 +7,26 @@ import math
 # 1. A version of the function that accepts and returns pint.Quantity instances.
 # 2. A version of the function that accepts and returns UncertainQuantity instances.
 #
-# The problem is complicated by pints usage of a registry (which we have adopted as well).
+# The problem is complicated by pint's usage of a registry (which we have adopted as well).
 # Quantities from different registries are not compatible, so we can't just create a registry
 # and wrap all of the functions because the user's registry will not be compatible. So,
 # we need a way to get at the user's registries...
 
 # here is an example of how we would "manually" wrap sin
 def manual_sin(x):
-  f = x._REGISTRY.wraps( x._REGISTRY(""), x._REGISTRY("radian"), False )(math.sin)
+  # start with the math module's version
+  f = math.sin
   try:
-    f = x._CONVENTION.WithError( f )
+    # if the argument is a pint quantity, or an uncertain quantity, it will have a member named '_REGISTRY'
+    # _REGISTRY will have a function named 'wraps()' that we can use to create
+    # a unit-aware version of sin
+    f = x._REGISTRY.wraps( x._REGISTRY(""), x._REGISTRY("radian"), False )(f)
+    try:
+      # if the argument is an uncertain quantity, it will have a member named '_CONVENTION', which will
+      # have a method named 'WithError()'
+      f = x._CONVENTION.WithError( f )
+    except:
+      pass
   except:
     pass
 
@@ -53,3 +63,51 @@ tan  = WrapNumFunc( 'tan'  , 'radian' , ''       )
 asin = WrapNumFunc( 'asin' , ''       , 'radian' )
 acos = WrapNumFunc( 'acos' , ''       , 'radian' )
 atan = WrapNumFunc( 'atan' , ''       , 'radian' )
+
+# the problem with the above approach is that a wrapped function is created every time the function is called.
+# a better approach might be to create classes to store unit-aware and error propagatoin aware function.
+
+def wrap_functions(REGISTRY):
+  # allow a registry, or any object that has a registry to be passed in.
+  if not hasattr(REGISTRY,'wraps') and hasattr(REGISTRY,'_REGISTRY'):
+    REGISTRY = REGISTRY._REGISTRY
+
+  R = REGISTRY
+
+  import math
+  class Funcs():
+    pass
+
+  funcs = [ [ 'sin', ['radian'], '' ],
+            [ 'cos', ['radian'], '' ],
+            [ 'tan', ['radian'], '' ],
+            [ 'asin',[''], 'radian' ],
+            [ 'acos',[''], 'radian' ],
+            [ 'atan',[''], 'radian' ],
+            [ 'exp',[''], '' ],
+            [ 'log',[''], '' ],
+            [ 'log10',[''], '' ],
+            [ 'erf',[''], '' ],
+            [ 'erfc',[''], '' ],
+            [ 'gamma',[''], '' ],
+            [ 'lgamma',[''], '' ],
+            None
+          ]
+  for f in funcs:
+    if f is not None:
+      setattr(Funcs, f[0], staticmethod(R.wraps( f[2], f[1], False)( getattr( math, f[0] ) ) ) )
+
+
+
+  return Funcs
+
+
+
+
+
+
+
+
+
+
+
