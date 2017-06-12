@@ -102,7 +102,7 @@ class UncertaintyConvention(object):
   def calc_UncertainQuantity( self, data, round = False ):
     '''Computes an uncertain quantity from a data set (computes the standard error)'''
     nominal = sum( data ) / len(data)
-    std_dev = ( sum( [ (x - nominal)**2 for x in data ] ) / len(data) )**0.5 # Note: using the 'biased' estimate
+    std_dev = ( sum( [ (x - nominal)**2 for x in data ] ) / (len(data)-1) )**0.5 # Note: using the 'unbiased' estimate
     std_err = std_dev /len( data )**0.5
 
     q = self.UncertainQuantity( nominal, std_err )
