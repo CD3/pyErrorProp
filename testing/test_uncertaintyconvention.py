@@ -17,7 +17,7 @@ def test_from_data():
   x = uconv.calc_UncertainQuantity( data )
 
   assert Close( x.nominal.magnitude    , 2 )
-  assert Close( x.uncertainty.magnitude, numpy.std( numpy.array([1,2,3]) )/(3.**0.5) )
+  assert Close( x.uncertainty.magnitude, numpy.std( numpy.array([1,2,3]), ddof=1 )/(3.**0.5) )
 
 
 def test_ep_decorator():
@@ -66,3 +66,48 @@ def test_kwargs():
   assert Close( v.nominal.magnitude     , nv )
   assert Close( v.uncertainty.magnitude , dv )
 
+
+def test_rounding():
+
+  x = UQ_( '123 m +/- 24.132 m' )
+
+  nomt = type(x.nominal.magnitude)
+  unct = type(x.error.magnitude)
+
+  assert str(x) == "<UncertainQuantity(123, 24.132, meter)>"
+
+  y = x.__round__(1)
+  assert str(y) == "<UncertainQuantity(120, 20.0, meter)>"
+  assert type(y.nominal.magnitude) == nomt
+  assert type(y.error.magnitude) == unct
+
+  # x is not changed by rounding
+  assert str(x) == "<UncertainQuantity(123, 24.132, meter)>"
+
+
+  y = x.__round__(2)
+  assert str(y) == "<UncertainQuantity(123, 24.0, meter)>"
+  assert type(y.nominal.magnitude) == nomt
+  assert type(y.error.magnitude) == unct
+
+  # normalization changes x in place
+  x.normalize(1)
+  assert str(x) == "<UncertainQuantity(120, 20.0, meter)>"
+  assert type(x.nominal.magnitude) == nomt
+  assert type(x.error.magnitude) == unct
+
+
+  x = UQ_( '123 m +/- 0.032 m' )
+
+  nomt = type(x.nominal.magnitude)
+  unct = type(x.error.magnitude)
+
+  y = x.__round__(1)
+  assert str(y) == "<UncertainQuantity(123, 0.03, meter)>"
+  assert type(y.nominal.magnitude) == nomt
+  assert type(y.error.magnitude) == unct
+
+  y = x.__round__(2)
+  assert str(y) == "<UncertainQuantity(123, 0.032, meter)>"
+  assert type(y.nominal.magnitude) == nomt
+  assert type(y.error.magnitude) == unct

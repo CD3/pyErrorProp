@@ -221,8 +221,8 @@ def test_pint_measurement_comparison_speed():
   z = ((x - y)/(x - w))*w
   zz = ((xx - yy)/(xx - ww))*ww
 
-  print timeit.timeit( lambda : (((x - y)/(x - w))*w).uncertainty, number = 20 )
-  print timeit.timeit( lambda : (((xx - yy)/(xx - ww))*ww).std_dev, number = 20 )
+  # print timeit.timeit( lambda : (((x - y)/(x - w))*w).uncertainty, number = 20 )
+  # print timeit.timeit( lambda : (((xx - yy)/(xx - ww))*ww).std_dev, number = 20 )
 
   assert Close( z.nominal.magnitude, zz.value.magnitude )
   # assert Close( z.uncertainty.magnitude, zz.error.magnitude )

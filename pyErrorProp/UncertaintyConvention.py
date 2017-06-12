@@ -75,13 +75,69 @@ class UncertaintyConvention(object):
 
     return z
 
-  def __round__( self, uq ):
+  def __round__( self, uq, n ):
     '''Round an uncertain quantity based on the following conventions
        1. Normally, uncertainty should be rounded to one significant figure.
        2. If the uncertainty's first significant figure is 1, it should be rounded to two significant figures.
        3. The nominal value should be rounded to the same decimal position as the uncertainty.
     '''
-    return uq
+
+    # we use the Decimal class to handle rounding correctly
+    # we converting to a string first allows this to work with float and Decimal types
+    # without losing precision 
+    nom = decimal.Decimal(str(uq.nominal.magnitude))
+    unc = decimal.Decimal(str(uq.error.magnitude))
+
+    # if n was not given, then we round uncertainty to 1 sigfig.
+    ndig = n
+    if ndig is None:
+      ndig = 1
+
+    with decimal.localcontext() as ctx:
+      # check if we should increase the number
+      # of sigfigs from 1 to 2
+      ctx.prec = 10
+      if n is None and ndig == 1 and "{:+.10e}".format(unc)[1] == "1" :
+          ndig += 1
+
+    # get scientific notation string representation of the uncertainty
+    with decimal.localcontext() as ctx:
+      ctx.rounding = decimal.ROUND_HALF_UP
+      unc_str = ("{:+.%de}"%(ndig-1)).format(unc)
+
+    sign = 1 if unc_str[0] == '-' else 0
+    digits = ()
+    for d in unc_str.split('e')[0]:
+      if d not in '.+-' :
+        digits += (int(d),)
+
+    exponent = int(unc_str.split('e')[1]) - len(digits) + 1
+
+
+    # NOTE: exponent returned by as_tuple is for when all significant figures are to the *left* of the decimal point.
+    # so, if we add/remove 1 significant figure (rather than set it to zero), we will need to decrease/increase
+    # the exponent by 1.
+
+    # if requested number of digits is greater than the number available, pad
+    # with zeros.
+
+    while len(digits) < ndig:
+      exponent -= 1
+      digits = digits + (0,)
+
+
+    unc = decimal.Decimal( (sign, digits, exponent) )
+
+    # now round nominal value to the same decimal position as the uncertainty.
+    nom = nom.quantize(unc)
+
+
+    # now create quantities for the nominal and uncertainty, making sure to use the same types for each magnitude that were used in uq.
+    nom = uq.Quantity( type(uq.nominal.magnitude)(nom), uq.nominal.units )
+    unc = uq.Quantity( type(uq.error.magnitude)(unc), uq.error.units )
+
+
+    return uq.make( nom, unc )
 
   def __lt__( self, a, b ):
     '''Check that a is less than b.'''
@@ -235,20 +291,14 @@ def build_uncertainquantity_class(conv, ureg):
   UncertainQuantity.Quantity.__div__ = disable_for_UQ( UncertainQuantity.Quantity.__div__ )
 
 
-  # add auto support for arbitrary precision types to the Quantity class
+  # automatically interpret string values as Decimals.
   def wrap(f):
     def new_f(cls,value,units=None):
       if isinstance(value,(str,unicode)):
         try:
-          # try to use the mpmath module first
-          import mpmath
-          value = mpmath.mpf(value)
+          value = decimal.Decimal(value)
         except:
-          # otherwise use the decimal module
-          try:
-            value = decimal.Decimal(value)
-          except:
-            pass
+          pass
       return f(cls,value,units)
 
     return new_f

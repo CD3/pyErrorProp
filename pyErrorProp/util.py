@@ -20,10 +20,18 @@ def get_sigfig_decimal_pos( v, n ):
   # 12.34  -> 1.234e+1 ->  -1     ->  0
   # 0.1234 -> 1.234e-1 ->  +1     -> +2
 
-  fmt = '{:.0e}'
-  coeff,expo = fmt.format( float(v) ).split( 'e' )
+  # convert to decimal. note that the value might be a quantity, and we don't want the units...
+  v = decimal.Decimal( str( v ).split()[0] )
+  # adjust() returns the position of the first significant figure.
+  # but it uses a different sign convension. sigfigs to the right
+  # of the decimal are negative, sigfigs to the left are negative.
+  # we want the opposite.
+  i = -v.adjusted()
 
-  return -int(expo) + n - 1
+  # add offset for the requested sigfig
+  i += n-1
+
+  return i
 
 def sigfig_round( v, n = 2 ):
   '''Round a number or quantity to given number of significant figures.
@@ -44,23 +52,28 @@ def sigfig_round( v, n = 2 ):
   except:
     pass
 
+
+  # get a decimal representation of the value
+  dv = decimal.Decimal(str(v))
+
+  # get the decimal position that we need to round to
   nd = get_sigfig_decimal_pos( v,n )
-  # handle Decimal type special so we don't lose any digits
-  if isinstance( v, decimal.Decimal ):
-    return (v*10**nd).quantize(decimal.Decimal('1')) / 10**nd
+  # scale dv so that the last digit we want is in front of the decimal
+  dv = dv.scaleb(nd)
+  # now round off the decimal place
+  dv = dv.quantize(0)
+  # and scale it back
+  dv = dv.scaleb(-nd)
 
-  # handle mpmath.mpf type special so we don't lose any digits
-  if 'mpmath' in sys.modules:
-    import mpmath as mp
-    if isinstance( v, mp.mpf ):
-      return mp.mpf( mp.nstr( v, n ) )
+  try:
+    # return the rounded number, but make sure we return the same type
+    # this works for any type that can be constructed from a string
+    return type(v)( str(dv) )
+  except:
+    # some types might not be constructable from a string, so we will try
+    # a float instead
+    return type(v)( float(dv) )
 
-  # if v is an int, we need to make it a float
-  if isinstance( v, int ):
-    v = float(v)
-
-  # get the decimal position of the n'th sigfig and round
-  return type(v)(round(v*10**nd))/type(v)(10**nd)
 
 def isuncertain(v):
   if hasattr( v, 'uncertainty' ):

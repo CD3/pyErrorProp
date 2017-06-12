@@ -9,6 +9,7 @@ class _UncertainQuantity(object):
 
   _REGISTRY = ureg
   Quantity = _REGISTRY.Quantity
+  Decimal = decimal.Decimal
 
   def __init__( self, nom, unc = None, unit = None ):
     if unc is None and unit is None and isinstance(nom,(str,unicode)):
@@ -94,38 +95,21 @@ class _UncertainQuantity(object):
   def interval(self):
     return 2*self.uncertainty
 
+  def __round__(self,n=None):
+    return self._CONVENTION.__round__(self,n)
+
   def normalize(self,n=None):
-    '''Return a normalized uncertain quantatiy with an uncertainty
+    '''Normalized the uncertain quantatiy in place with an uncertainty
        rounded to the requested number of significant figures, and
        the nominal value rounded to the same decimal position as the
        uncertainty.'''
 
-    # __format__ already does what we need, so we'll just format
-    # ourself and use parse_string to get the nominal and uncertainty values.
+    # __round__ already does what we need, we just need to do it in place.
+    tmp = self.__round__(n)
+    self._nom = tmp._nom
+    self._unc = tmp._unc
 
-    fmtstr = "{"
-    if n is not None:
-      fmtstr += ":."+str(n)
-    fmtstr += "}"
-
-    nom,unc = self.parse_string( fmtstr.format(self) )
-
-    toks = nom.split()
-    nomv = toks[0]
-    nomu = " ".join(toks[1:])
-    nomt = type(self._nom.magnitude)
-
-    toks = unc.split()
-    uncv = toks[0]
-    uncu = "".join(toks[1:])
-    unct = type(self._unc.magnitude)
-
-    nom = self.Quantity(nomt(nomv),nomu)
-    unc = self.Quantity(unct(uncv),uncu)
-
-    q = self.make(nom,unc)
-
-    return q
+    return self
 
     
 
@@ -146,19 +130,10 @@ class _UncertainQuantity(object):
     else:
       unc = self._unc.to(self._unit).magnitude
 
-    template = "<UncertainQauntity({0}, {1}, {2})>" 
-    if 'mpmath' in sys.modules:
-      import mpmath
-      if not isinstance(nom, mpmath.mpf):
-        nom = mpmath.mpmathify(nom)
-      if not isinstance(unc, mpmath.mpf):
-        unc = mpmath.mpmathify(unc)
+    template = "<UncertainQuantity({0}, {1}, {2})>" 
 
-      nom_s = mpmath.nstr(nom)
-      unc_s = mpmath.nstr(unc)
-    else:
-      nom_s = "{f}".format(nom)
-      unc_s = "{f}".format(unc)
+    nom_s = str(nom)
+    unc_s = str(unc)
 
     return template.format(nom_s,unc_s,self._unit)
 
@@ -183,6 +158,11 @@ class _UncertainQuantity(object):
     # of figures after the decimal point. The nominal value's precision will set to match
     # the uncertainties.
     #
+    # The __round__ function already does this. It uses the Decimal type internally, but converts
+    # back to the actual type used for storing the nominal and uncertainty values. So, if
+    # we just create an uncertain quantity that uses Decimal and round it, we will have
+    # what we need.
+    #
     #
     # Pint already handles formatting of units (and does a nice job), so we just need to format the value portion.
     # 
@@ -193,48 +173,31 @@ class _UncertainQuantity(object):
     u_fmtspec = fmtspec.replace(v_fmtspec,'')
 
 
-    # determine the precision
+    # get number of sigfigs requested
     psre = re.compile('\.([0-9]+)')
     match = psre.search( v_fmtspec )
-    prec_given = False
-    prec = 1
+    nsig = None
     if match:
-      prec_given = True
-      prec = match.group(1)
-    prec = int(prec)
-    prec -= 1 # number of sigfigsis one more than precision.
-    if prec < 0:
-      prec = 0
+      nsig = match.group(1)
+      nsig = int(nsig)
+      if nsig < 0:
+        nsig = 0
 
-    # Rounding based on sigfigs is a little tricky. None of the builtin rounding
-    # functions round based on sigfigs. The simplest way to round to a given sigfig
-    # is to get a scientific representation of the number, then the first digit displayed
-    # is significant. If we want to display the number in fixed decimal representation, then
-    # we have to figure out what precision (places after decimal) corresponds to the given
-    # significant figure.
-    # 
-    # We don't want to do this manually. we'll use the Decimal module instead.
-    nom = self.nominal.magnitude
-    unc = self.uncertainty.magnitude
-    if 'mpmath' in sys.modules:
-      import mpmath
-      nom = mpmath.nstr(nom)
-      unc = mpmath.nstr(unc)
-    nom = decimal.Decimal( nom )
-    unc = decimal.Decimal( unc )
-    if prec_given == False and prec == 0 and ('{:e}'.format(unc))[0] == '1':
-      # special case: if leading significant figure is 1, then take two
-      prec += 1
-    unc = ('{:.%de}'%prec).format(unc) # a string rounded to the correct number of sigfigs
-    unc = decimal.Decimal(unc)         # back to a decimal
-    nom = nom.quantize(unc)
     # now we can remove the precision spec
-    # precision will be handled by the Decimal class
     v_fmtspec = psre.sub( '', v_fmtspec )
 
+    # create an uncertain quantity that uses Decimal for storate and round
+    units = self.nominal.units
+    nom = self.Quantity( decimal.Decimal(str(self.nominal.magnitude)), units )
+    unc = self.Quantity( decimal.Decimal(str(self.error.to(units).magnitude)), units )
+    uq = self.make( nom, unc ).__round__(nsig)
+
+    # now get the nominal and uncertainty values
+    nom = uq.nominal.magnitude
+    unc = uq.error.magnitude
 
     # Use pint to create a template string with the units already formatted
-    # by creatign a quantity with a string replacement (%s) as a magnitude.
+    # by creating a quantity with a string replacement (%s) as a magnitude.
     tmpl = ('{:'+u_fmtspec+'}').format( self.Quantity( '%s', self._unit ) )
 
 

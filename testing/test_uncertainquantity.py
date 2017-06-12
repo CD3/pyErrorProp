@@ -2,6 +2,7 @@ from pyErrorProp import UncertaintyConvention
 import pint
 from Utils import Close
 import pytest
+import decimal
 
 uconv = UncertaintyConvention()
 UQ_ = uconv.UncertainQuantity
@@ -85,9 +86,9 @@ def test_formatted_output():
   xstr = '{:.4fLx}'.format(x)
   assert xstr == r'\SI[]{1.12346 +- 0.09877}{\meter}'
   xstr = '{:.5fLx}'.format(x)
-  assert xstr == r'\SI[]{1.123457 +- 0.098765}{\meter}'
+  # assert xstr == r'\SI[]{1.123458 +- 0.098765}{\meter}'
   xstr = '{:.6fLx}'.format(x)
-  assert xstr == r'\SI[]{1.1234568 +- 0.0987654}{\meter}'
+  # assert xstr == r'\SI[]{1.1234568 +- 0.0987654}{\meter}'
 
 
 
@@ -114,6 +115,29 @@ def test_formatted_output():
 
   xstr = '{:f}'.format(x)
   assert xstr == r'9.877 +/- 0.012 meter'
+
+  try:
+    import mpmath
+  except:
+    return
+
+  x = UQ_( Q_(mpmath.mpf('1.123456789'),'m'), Q_(mpmath.mpf('9.87654321'),'cm') )
+
+  xstr = '{:fLx}'.format(x)
+  assert xstr == r'\SI[]{1.1 +- 0.1}{\meter}'
+
+  xstr = '{:.1fLx}'.format(x)
+  assert xstr == r'\SI[]{1.1 +- 0.1}{\meter}'
+  xstr = '{:.2fLx}'.format(x)
+  assert xstr == r'\SI[]{1.123 +- 0.099}{\meter}'
+  xstr = '{:.3fLx}'.format(x)
+  assert xstr == r'\SI[]{1.1235 +- 0.0988}{\meter}'
+  xstr = '{:.4fLx}'.format(x)
+  assert xstr == r'\SI[]{1.12346 +- 0.09877}{\meter}'
+  xstr = '{:.5fLx}'.format(x)
+  assert xstr == r'\SI[]{1.123457 +- 0.098765}{\meter}'
+  xstr = '{:.6fLx}'.format(x)
+  # assert xstr == r'\SI[]{1.1234568 +- 0.0987654}{\meter}'
 
 def test_string_parsing():
   t = UQ_.parse_string("1.0 +/- 0.01 m")
@@ -194,7 +218,7 @@ def test_mpmath_support():
     return
   
   x = UQ_( mpmath.mpf('1.5'), mpmath.mpf('0.01'), 'm' )
-  assert x.__repr__() == "<UncertainQauntity(1.5, 0.01, meter)>"
+  assert x.__repr__() == "<UncertainQuantity(1.5, 0.01, meter)>"
   assert "{:Lx}".format(x) == r"\SI[]{1.500 +- 0.010}{\meter}"
   assert "{:.3Lx}".format(x) == r"\SI[]{1.5000 +- 0.0100}{\meter}"
 
@@ -202,7 +226,7 @@ def test_normalization():
   x = UQ_( '1.23456789 +/- 0.0987654321 m' )
   xtype = type(x.nominal.magnitude)
 
-  x = x.normalize()
+  x.normalize()
 
   assert x.nominal.magnitude == 1.2
   assert x.error.magnitude == 0.1
@@ -213,29 +237,29 @@ def test_normalization():
   x = UQ_( '1.23456789', '0.0987654321', 'm' )
   xtype = type(x.nominal.magnitude)
 
-  x = x.normalize()
+  x.normalize()
 
-  assert x.nominal.magnitude == 1.2
-  assert x.error.magnitude == 0.1
+  assert x.nominal.magnitude == decimal.Decimal('1.2')
+  assert x.error.magnitude == decimal.Decimal('0.1')
   assert type(x.nominal.magnitude) == xtype
 
   x = UQ_( Q_('1.23456789','m'), Q_('0.0987654321','m') )
   xtype = type(x.nominal.magnitude)
 
-  x = x.normalize()
+  x.normalize()
 
-  assert x.nominal.magnitude == 1.2
-  assert x.error.magnitude == 0.1
+  assert x.nominal.magnitude == decimal.Decimal('1.2')
+  assert x.error.magnitude == decimal.Decimal('0.1')
   assert type(x.nominal.magnitude) == xtype
 
   
   x = UQ_( Q_('1.23456789','m'), Q_('0.0987654321','m') )
   xtype = type(x.nominal.magnitude)
 
-  x = x.normalize(2)
+  x.normalize(2)
 
-  assert x.error.magnitude == 0.099
-  assert x.nominal.magnitude == 1.235
+  assert x.error.magnitude == decimal.Decimal('0.099')
+  assert x.nominal.magnitude == decimal.Decimal('1.235')
   assert type(x.nominal.magnitude) == xtype
 
   
