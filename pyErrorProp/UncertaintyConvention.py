@@ -75,7 +75,7 @@ class UncertaintyConvention(object):
 
     return z
 
-  def __round__( self, uq, n ):
+  def __round__( self, uq, n = None ):
     '''Round an uncertain quantity based on the following conventions
        1. Normally, uncertainty should be rounded to one significant figure.
        2. If the uncertainty's first significant figure is 1, it should be rounded to two significant figures.
