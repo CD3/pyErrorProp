@@ -1,12 +1,19 @@
 #! /usr/bin/env python
-# -*- coding: utf-8 -*-
 
 from pyErrorProp import *
 
-# The following example calculates the gravitational acceleration constant from
-# a set of 10 fall time measurements for a ball bearing dropped from 1.5 m
+# we first need to setup an uncertainty convention, which then defines
+# in class for uncertain quantities. the uncertain quantity is based
+# on a pint Quantity class.
+conv = UncertaintyConvention()
+UQ_ = conv.UncertainQuantity
+Q_ = UQ_.Quantity
+
+
+
 
 # RAW DATA
+# Q_ is an alias for pint.Quantity, it creates a quantity with units.
 TimeData = Q_([ 0.431
               , 0.603
               , 0.504
@@ -19,37 +26,15 @@ TimeData = Q_([ 0.431
               , 0.578 ], 's' ) # time measured in seconds
 
 print 't:',TimeData
-
-# get_UQ will compute an uncertain quantity from an array of quantities.
-TimeMeasurement = get_UQ( TimeData )
-print 't:', TimeMeasurement
-print 't: {:.10f}'.format(TimeMeasurement)
-print 
-
-# by default, get_UQ will round the uncertainty to 2 significant figures
-# and then round the nominal value to the same precision (decimal precision)
-# the number of sigfigs to round to can be specified.
-TimeMeasurement = get_UQ( TimeData, sigfigs=3 )
-print 't:',TimeMeasurement
-print 't: {:.10f}'.format(TimeMeasurement)
 print
 
-TimeMeasurement = get_UQ( TimeData, sigfigs=4 )
-print 't:',TimeMeasurement
-print 't: {:.10f}'.format(TimeMeasurement)
-print
+# conv.calc_UncertainQuantity will compute an uncertain quantity from an array of quantities.
+TimeMeasurement = conv.calc_UncertainQuantity( TimeData )
+print 't: {}'.format(TimeMeasurement) # this will pretty print the quantity
 
-# or disabled all together
-TimeMeasurement = get_UQ( TimeData, sigfigs=0 )
-print 't:',TimeMeasurement
-print 't: {:.10f}'.format(TimeMeasurement)
-print
-
-TimeMeasurement = get_UQ( TimeData, sigfigs=1 )
-
-HeightMeasurement = UQ_( Q_(1.5,'m'), Q_(1,'cm') )  # UQ_ creates an uncertain quantity
-print 'h:',HeightMeasurement
-print 'h: {:.10f}'.format(HeightMeasurement)
+# UQ_ creates an uncertain quantity from two quantities
+HeightMeasurement = UQ_( Q_(1.5,'m'), Q_(1,'cm') )
+print 'h: {}'.format(HeightMeasurement)
 print
 
 
@@ -60,31 +45,15 @@ print
 # We just need to write a function to calculate g from h and t, and tell pyErrorProp that
 # we want to propagate error through it.
 
-@WithError
-def Gravity( h, t ):
+@conv.WithError
+def CalcGravity( h, t ):
   return 2*h/t**2
 
 # Now calculate gravitational acceleration with its uncertainty
-GravityCalc = Gravity( HeightMeasurement, TimeMeasurement )
+Gravity = CalcGravity( HeightMeasurement, TimeMeasurement )
 
-print 'g:',GravityCalc
-print 'g: {:.10f}'.format(GravityCalc)
+print 'g: {}'.format(Gravity)
 print
 
-# pyErrorProp does not round the result. use sigfig_round for that
-GravityCalc = sigfig_round( GravityCalc, n=1 )
-print 'g:',GravityCalc
-print 'g: {:.10f}'.format(GravityCalc)
-print
-
-# we can also have the uncertainty contributions from each input quantity returned
-@WithUncertainties
-def Gravity( h, t ):
-  return 2*h/t**2
-
-# Now calculate gravitational acceleration with its uncertainty
-GravityCalc,GravityUnc = Gravity( HeightMeasurement, TimeMeasurement )
-
-print 'g:',GravityCalc
-print 'g unc:',GravityUnc
-print
+# check to see if our measurement is consistent with the accepted value (9.81 m/s^2)
+print "consistent:",conv.consistent( Q_(9.8,'m/s^2'), Gravity )
