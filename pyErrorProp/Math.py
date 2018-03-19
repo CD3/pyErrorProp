@@ -1,4 +1,6 @@
 import math
+from .unicode import *
+
 
 # Add support for Uncertain Quantities to mathematical functions
 #

@@ -15,35 +15,44 @@ class CorrelationRegistry(object):
 
   def correlated( self, x, y, r ):
 
-    if not isuncertain(x) or not isuncertain(y):
-      return
+    try:
+      if not isuncertain(x) or not isuncertain(y):
+        return
 
-    if not x in self._correlations:
-      self._correlations[x] = wdict()
+      if not x in self._correlations:
+        self._correlations[x] = wdict()
 
-    if not y in self._correlations:
-      self._correlations[y] = wdict()
+      if not y in self._correlations:
+        self._correlations[y] = wdict()
 
-    self._correlations[x][y] = r
-    self._correlations[y][x] = r
+      self._correlations[x][y] = r
+      self._correlations[y][x] = r
+    except TypeError:
+      pass
 
   def correlation( self, x, y, default = 0 ):
-    if x is y:
-      return 1
+    try:
+      if x is y:
+        return 1
 
-    if not x in self._correlations:
+      if not x in self._correlations:
+        return default
+
+      if not y in self._correlations[x]:
+        return default
+
+      return self._correlations[x][y]
+    except TypeError:
       return default
-
-    if not y in self._correlations[x]:
-      return default
-
-    return self._correlations[x][y]
   
   def dependencies( self, x, default = [] ):
-    if not x in self._correlations:
-      return default
+    try:
+      if not x in self._correlations:
+        return default
 
-    return self._correlations[x].keys()
+      return list(self._correlations[x].keys())
+    except TypeError:
+      return default
 
   def matrix( self, *args ):
     '''Return a correlation matrix for a set of arguments.'''

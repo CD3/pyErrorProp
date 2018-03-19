@@ -202,7 +202,7 @@ def test_output_formatting():
 @pytest.mark.skipif(True,reason="need to port to new framework")
 def test_decimal():
   import decimal
-  print
+  print()
   x = Q_(0.15, 'kg m^2 / s^2')
   assert '{:.1f~}'.format(x) == '0.1 kg * m ** 2 / s ** 2' # rounds to 0.1 because 0.15 is really 0.1499...
   x = Q_(decimal.Decimal('0.15'), 'kg m^2 / s^2')

@@ -5,3 +5,5 @@ build
 pyErrorProp.egg-info
 .*.swp
 .cache/
+.pytest_cache/
+

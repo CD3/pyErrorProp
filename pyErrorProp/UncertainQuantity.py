@@ -1,5 +1,8 @@
+from __future__ import division
 import operator, re, decimal, copy, sys
 import pint
+
+from .unicode import *
 
 
 ureg = pint.UnitRegistry()
@@ -300,11 +303,18 @@ class _UncertainQuantity(object):
   def __rmul__(self,other):
     return self._CONVENTION.__propagate_error__( operator.__mul__, (other,self) )
 
+  def __truediv__(self,other):
+    return self._CONVENTION.__propagate_error__( operator.__truediv__, (self,other) )
+
+  def __rtruediv__(self,other):
+    return self._CONVENTION.__propagate_error__( operator.__truediv__, (other,self) )
+
   def __div__(self,other):
     return self._CONVENTION.__propagate_error__( operator.__div__, (self,other) )
 
   def __rdiv__(self,other):
     return self._CONVENTION.__propagate_error__( operator.__div__, (other,self) )
+
 
   def __pow__(self,other):
     return self._CONVENTION.__propagate_error__( operator.__pow__, (self,other) )

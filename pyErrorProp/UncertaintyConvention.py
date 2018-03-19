@@ -7,6 +7,8 @@ from .ErrorPropagator import PositiveIntervalPropagator, nominal, uncertainty
 from .CorrelationRegistry import CorrelationRegistry
 from .util import *
 
+from .unicode import *
+
 UR = UnitRegistry()
 EP = PositiveIntervalPropagator
 
@@ -247,7 +249,7 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
       new_args.append( a )
 
     new_kargs = dict()
-    for k,v in kargs.items():
+    for k,v in list(kargs.items()):
       if not v.__class__.__name__ == 'UncertainQuantity':
         v = self.uconv.make_sigfig_UQ( v, self.sigfigs )
       new_kargs[k] = v

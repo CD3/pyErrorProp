@@ -164,7 +164,7 @@ def test_multiple_funcs():
   dV = numpy.sqrt( dV1**2 + dV2**2 + dV3**2 )
 
   Volume = Vol(Length,Width,Height)
-  print Volume
+  print(Volume)
   assert Close(  V,     nominal(Volume).magnitude, 0.001 )
   assert Close( dV, uncertainty(Volume).magnitude, 0.001 )
 

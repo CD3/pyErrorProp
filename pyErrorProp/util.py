@@ -6,7 +6,6 @@ import math, decimal, copy, sys
 
 
 
-
 def get_sigfig_decimal_pos( v, n ):
   '''Determine the decimal position of the n'th significant figure'''
   # The simplest way to identify significant figures is to represent
