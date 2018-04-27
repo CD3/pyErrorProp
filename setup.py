@@ -7,7 +7,7 @@ DESCRIPTION = "Error propgation calculations with uncertian quantities."
 LONG_DESCRIPTION = open('README.md').read()
 
 setup(name='pyErrorProp',
-      version='0.0.0',
+      version='3.0.0',
       description=DESCRIPTION,
       long_description=LONG_DESCRIPTION,
       author='C.D. Clark III',
