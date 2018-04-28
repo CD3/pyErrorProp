@@ -4,6 +4,8 @@ from Utils import *
 import sys
 import pytest
 
+from inspect import getargspec
+
 uconv = UncertaintyConvention()
 UQ_ = uconv.UncertainQuantity
 Q_  = UQ_.Quantity
@@ -310,6 +312,26 @@ def test_power():
   assert Close( z.nominal, 1, 0.001 )
   assert Close( z.uncertainty, 0, 0.001 )
 
+
+
+
+def test_uncconv_decorator_signatures():
+
+  @uconv.WithError
+  def func(x,y):
+    return x*y
+
+  assert len(getargspec(func).args) == 2
+  assert getargspec(func).args[0] == 'x'
+  assert getargspec(func).args[1] == 'y'
+
+  @uconv.WithAutoError()
+  def func2(x,y):
+    return x*y
+
+  assert len(getargspec(func2).args) == 2
+  assert getargspec(func2).args[0] == 'x'
+  assert getargspec(func2).args[1] == 'y'
 
 
 

@@ -1,5 +1,6 @@
 import copy
 from .util import *
+from .decorator import decorate
 
 
 #########
@@ -145,5 +146,9 @@ class PositiveIntervalPropagator( ErrorPropagator ):
 
 def WithError(func):
   propagator = PositiveIntervalPropagator()
-  propagator.func = func
-  return propagator
+
+  def wrapper(f,*args,**kwargs):
+    propagator.func = f
+    return propagator(*args,**kwargs)
+
+  return decorate(func,wrapper)

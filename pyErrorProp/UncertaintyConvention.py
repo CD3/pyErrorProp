@@ -9,6 +9,8 @@ from .util import *
 
 from .unicode import *
 
+from .decorator import decorate
+
 UR = UnitRegistry()
 EP = PositiveIntervalPropagator
 
@@ -172,10 +174,11 @@ class UncertaintyConvention(object):
   calc_UQ = calc_UncertainQuantity
 
   def WithError(self,func):
-    def wrapper(*args,**kwargs):
-      return self.__propagate_error__( func, args, kwargs )
 
-    return wrapper
+    def wrapper(f,*args,**kwargs):
+      return self.__propagate_error__( f, args, kwargs )
+
+    return decorate(func,wrapper)
 
   def WithAutoError(self,sigfigs=3):
     '''Automatically calculate uncertainty in a function return value assuming all arguments are uncertain
@@ -185,9 +188,9 @@ class UncertaintyConvention(object):
 
     def Decorator(func):
 
-      def wrapper(*args,**kwargs):
+      def wrapper(f,*args,**kwargs):
         propagator = AutoErrorPropagator(self,sigfigs)
-        zbar,dzs = propagator.__propagate_uncertainties__(func,*args,**kwargs)
+        zbar,dzs = propagator.__propagate_uncertainties__(f,*args,**kwargs)
         dzs = [ ( dzs[k], kwargs[k] if k in kwargs else args[k] ) for k in dzs ]
         creg = self._CORRREGISTRY
 
@@ -202,9 +205,7 @@ class UncertaintyConvention(object):
 
         return z
 
-
-
-      return wrapper 
+      return decorate(func,wrapper)
 
     return Decorator
 

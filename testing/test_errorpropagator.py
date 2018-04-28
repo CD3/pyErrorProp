@@ -4,10 +4,25 @@ import pint, numpy
 from pyErrorProp import *
 import pytest
 from Utils import Close
+from inspect import getargspec
 
 ureg = pint.UnitRegistry()
 Q_ = ureg.Quantity
 UQ_ = ureg.Measurement
+
+
+
+
+def test_error_prop_decorator_signatures():
+
+  @WithError
+  def func(x,y):
+    return x*y
+
+  assert len(getargspec(func).args) == 2
+  assert getargspec(func).args[0] == 'x'
+  assert getargspec(func).args[1] == 'y'
+
 
 
 
@@ -18,6 +33,7 @@ def test_simple_error_prop():
   @WithError
   def velocity(x,t):
     return x/t
+
 
   v,dv = velocity(x,t)
 
