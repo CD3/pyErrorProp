@@ -93,7 +93,7 @@ with `pint.Measurement`. Since the `pint.Measurement` class uses the `ufloat`
 type, all uncertain quantities must be represented as floats.  It is not
 possible, for example, to use the `decimal.Decimal` type to store numeric
 values.  The other issue is that, since `pint.Measurement` stores a `ufloat`
-and attached units to it, the units for the quantity's nominal value and
+and attaches units to it, the units for the quantity's nominal value and
 uncertainty are the same. At first this doesn't appear to be much of an issue at all, except
 that it would be nice to be able to specify the uncertainty of a length in centimeters
 while its nominal value is given in meters. However, `pint` knows about offset units, such as

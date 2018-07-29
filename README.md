@@ -75,7 +75,7 @@ print "consistent:",conv.consistent( Q_(9.8,'m/s^2'), Gravity )
 Now run the script
 ```bash
 > ./calc_gravity.py
-t: [ 0.431  0.603  0.504  0.581  0.588  0.644  0.595  0.534  0.563  0.578] second
+t: [0.431 0.603 0.504 0.581 0.588 0.644 0.595 0.534 0.563 0.578] second
 
 t: 0.562 +/- 0.019 second
 h: 1.500 +/- 0.010 meter
@@ -160,7 +160,7 @@ with `pint.Measurement`. Since the `pint.Measurement` class uses the `ufloat`
 type, all uncertain quantities must be represented as floats.  It is not
 possible, for example, to use the `decimal.Decimal` type to store numeric
 values.  The other issue is that, since `pint.Measurement` stores a `ufloat`
-and attached units to it, the units for the quantity's nominal value and
+and attaches units to it, the units for the quantity's nominal value and
 uncertainty are the same. At first this doesn't appear to be much of an issue at all, except
 that it would be nice to be able to specify the uncertainty of a length in centimeters
 while its nominal value is given in meters. However, `pint` knows about offset units, such as
