@@ -9,7 +9,8 @@ ROOTDIR=$(git rev-parse --show-toplevel || echo $PWD)
 cd $ROOTDIR
 
 # make sure unit tests pass
-./util-scripts/run_tests.sh
+./util-scripts/test
+./util-scripts/test_install.sh
 
 
 

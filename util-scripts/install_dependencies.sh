@@ -1,6 +1,7 @@
 #! /bin/bash
 
-deps="pytest pint uncertainties numpy mpmath"
+ROOTDIR=$(git rev-parse --show-toplevel || echo $PWD)
+deps="$(cat ${ROOTDIR}/requirements.txt)"
 
 for dep in $deps
 do
