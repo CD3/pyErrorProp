@@ -1,11 +1,5 @@
-atomicwrites==1.2.1
-attrs==18.2.0
-more-itertools==4.3.0
 mpmath==1.0.0
 numpy==1.15.4
 Pint==0.8.1
-pluggy==0.8.0
-py==1.7.0
 pytest==4.0.0
-six==1.11.0
 uncertainties==3.0.3
