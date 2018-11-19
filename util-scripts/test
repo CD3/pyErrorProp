@@ -1,0 +1,36 @@
+#! /bin/bash
+
+set -e # exist immediatly on error
+
+ROOTDIR=$(git rev-parse --show-toplevel || echo $PWD)
+cd $ROOTDIR
+
+workdir=$(readlink -f ".test-sandbox")
+
+function cleanup ()
+{
+  [[ -d ${workdir} ]] && rm -rf ${workdir}
+}
+trap cleanup EXIT
+trap cleanup ERR
+
+set -e
+
+echo "Creating sandbox directory (${workdir}) to work in"
+mkdir ${workdir}
+cd ${workdir}
+echo "Copying repo to sandbox"
+cp -r ${ROOTDIR}/testing ./
+rm -f ./testing/pyErrorProp
+cp -r ${ROOTDIR}/pyErrorProp ./testing
+echo "Setting up virtual envirtonment to test"
+virtualenv -p python3 env
+source env/bin/activate
+pip install pytest
+pip install pint
+pip install uncertainties
+pip install numpy
+pip install mpmath
+cd testing
+pytest
+
