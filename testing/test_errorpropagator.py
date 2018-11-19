@@ -4,7 +4,7 @@ import pint, numpy
 from pyErrorProp import *
 import pytest
 from Utils import Close
-from inspect import getargspec
+from inspect import signature 
 
 ureg = pint.UnitRegistry()
 Q_ = ureg.Quantity
@@ -19,9 +19,9 @@ def test_error_prop_decorator_signatures():
   def func(x,y):
     return x*y
 
-  assert len(getargspec(func).args) == 2
-  assert getargspec(func).args[0] == 'x'
-  assert getargspec(func).args[1] == 'y'
+  assert len(signature(func).parameters) == 2
+  assert list(signature(func).parameters)[0] == 'x'
+  assert list(signature(func).parameters)[1] == 'y'
 
 
 

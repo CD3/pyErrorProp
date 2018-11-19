@@ -177,7 +177,7 @@ class _UncertainQuantity(object):
 
 
     # get number of sigfigs requested
-    psre = re.compile('\.([0-9]+)')
+    psre = re.compile(r'\.([0-9]+)')
     match = psre.search( v_fmtspec )
     nsig = None
     if match:
@@ -187,7 +187,7 @@ class _UncertainQuantity(object):
         nsig = 0
 
     # now we can remove the precision spec
-    v_fmtspec = psre.sub( '', v_fmtspec )
+    v_fmtspec = psre.sub( r'', v_fmtspec )
 
     # create an uncertain quantity that uses Decimal for storate and round
     units = self.nominal.units
@@ -253,8 +253,8 @@ class _UncertainQuantity(object):
     unc = '%s %s'%(uncv,uncu)
 
     # remove extra spaces
-    nom = re.sub('\s+',' ',nom.strip())
-    unc = re.sub('\s+',' ',unc.strip())
+    nom = re.sub(r'\s+',' ',nom.strip())
+    unc = re.sub(r'\s+',' ',unc.strip())
 
     return (nom,unc)
 
