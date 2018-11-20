@@ -40,6 +40,28 @@ EOF
 
 
 
+echo "Testing distutils install"
+virtualenv -p python3 env
+source env/bin/activate
+source ${ROOTDIR}/util-scripts/install_dependencies.sh
+cd pyErrorProp-repo
+python setup.py install
+cd ..
+
+echo "Looking for installed package in virtualenv"
+if ! find ./env -iname 'pyErrorProp'
+then
+  echo "ERROR: did not find pyErrorProp in virtual environment's site packages directory."
+  exit 1
+fi
+
+echo "Trying to use installed package"
+python test.py
+
+
+deactivate
+rm -r env
+
 
 
 echo "Testing pip install"

@@ -86,6 +86,43 @@ consistent: True
 
 ```
 
+## Installing
+
+`pyErrorProp` provides a `distutils` setup script. To install, just run the `setup.py` script.
+
+```
+$ git clone https://github.com/CD3/pyErrorProp
+$ cd pyErrorProp
+$ python setup.py install
+```
+
+Or, using `pip`
+```
+$ pip install git+git://github.com/CD3/pyErrorProp
+```
+
+The entire module is contained in the `pyErrorProp/` directory of the repository, so you can also just
+copy this directory to your current working directory.
+
+```
+$ git clone https://github.com/CD3/pyErrorProp pyErrorProp-repo
+$ cp -r pyErrorProp-repo pyErrorProp
+$ python -c "import pyErrorProp" # check that it works.
+```
+
+### Dependencies
+
+`pyErrorProp` requires [`pint`](https://pint.readthedocs.io/en/latest/), which can be installed with pip.
+
+```
+$ pip install pint
+```
+
+`numpy` is also required if you want to use the functions that compute uncertain quantities from a set of measurements.
+
+```
+$ pip install pint
+```
 ## Motivation
 
 This module was created to perform error analysis calculations that we teach to students in undergraduate Physics I/II courses. Rather than have student perform derivatives (which they cannot do in the
@@ -107,7 +144,7 @@ There are other packages that do error propagation:
 
 - `uncertainties`(https://github.com/lebigot/uncertainties) Uses first-order error propagation..
   Derivatives of expressions are computed analytically and it handles correlation.
-- `soerp`(https://github.com/tisimst/soerp) Uses second-order error propgation. 
+- `soerp`(https://github.com/tisimst/soerp) Uses second-order error propagation. 
   Derivatives of expressions are computed analytically and it handles correlation.
 - `mcerp` (https://github.com/tisimst/mcerp) Uses monte-carlo method to compute distribution
   of the result of a calculation from the distributions of the inputs.
