@@ -121,7 +121,7 @@ $ pip install pint
 `numpy` is also required if you want to use the functions that compute uncertain quantities from a set of measurements.
 
 ```
-$ pip install pint
+$ pip install numpy
 ```
 ## Motivation
 
