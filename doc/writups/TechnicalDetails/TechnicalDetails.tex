@@ -1,37 +1,30 @@
-Package: fullpage
+\documentclass[letterpaper,10pt]{article}
+\usepackage{preamble}
 
-~TexRaw
-\newcommand{\nom}[1]{\bar{#1}}
-\newcommand{\unc}[1]{\Delta{#1}}
-\newcommand{\uq}[1]{\nom{#1} \pm \unc{#1}}
-\newcommand{\upp}[1]{\nom{#1} + \unc{#1}}
-\newcommand{\low}[1]{\nom{#1} - \unc{#1}}
-\newcommand{\ex}[1]{\langle #1 \rangle}
-\newcommand{\avg}[1]{\frac{1}{N} \sum_i^N #1}
-~
+\title{Error Propagation}
 
-# Background
+\begin{document}
+\maketitle
+
+\section{Background}
 
 "Error propagation" refers to the task of determining the uncertainty (or error) in a quantity that is calculated from one or more quantities with uncertainty. For example, given two quantities
 with uncertainty, $x$ and $y$, what is the uncertainty in the product $xy$? In general, if we have $z = f(x,y)$, we want to determine the uncertainty in $z$. The most common definition used
-for the uncertainty in a quantity is the standard deviation[^stddev]:
+for the uncertainty in a quantity is the standard deviation\footnote{The uncertainty in experimental measurements is commonly taken to be the standard error in the mean. Since standard error is the standard deviation of the sampling distribution, all of the calculations involving the standard deviation will also apply to standard error.}:
 $$
   \sigma_x = \sqrt{ \ex{ (x - \nom{x})^2 } } = \unc{x}
 $$
-
 So, if we have an uncertain quantity $x = \uq{x}$ and a calculation $z = f(x)$, the uncertainty in $z$ is defined as
 $$
   \unc{z} = \sqrt{ \ex{ (z - \nom{z})^2 } }.
 $$
-
 If $x$ is the result of multiple measurements, ${x_i}$, then we could simple calculate $\unc{z}$ directly,
-~Equation {#gendefs;}
-\begin{aligned}
+\begin{align}
+  \label{eq:calc-nom}
   \nom{z} &= \avg{ f(x_i) },\\
   \unc{z} &= \sqrt{ \avg{ (f(x_i) - \nom{z})^2 } }.
-\end{aligned}
-~
-This would give the standard error of the mean for $z$ based on the measured data. However, if $x$ is a random variable described by a probability distribution, then the expectation values should
+\end{align}
+This would give the standard deviation for $z$ based on the measured data. However, if $x$ is a random variable described by a probability distribution, then the expectation values should
 be evaluated in the limit $N \rightarrow \infty$. And even if we have ${x_i}$ measurements, $x$ can be considered a random variable that we have approximated using sample statistics.
 
 There are two commonly used methods for determining the uncertainty in a calculation involving uncertain quantities. The most common method is based on a first-order approximation to the function $f$.
@@ -40,44 +33,52 @@ $$
 f(x) = f(\nom{x}) + f^{\prime}(\nom{x})(x - \nom{x}) + \mathcal{O}( (x-\nom{x})^2)
 $$
 With this approximation, the expectation values for $z$ can be evaluated
-~Equation {#1stodefs;}
-\begin{aligned}
-  \nom{z} &= \ex{ f(x) } \approx f(\nom{x}), \\
-  \unc{z} &= \sqrt{ \ex{ (f(x) - \nom{z})^2 } } \approx \sqrt{ \ex{ \left( f^\prime(\nom{x}) (x - \nom{x}) \right)^2 } } } = \sqrt{ (f^{\prime}(\nom{x}) \unc{x})^2 } = | f^{\prime}(\nom{x}) \unc{x} |. \\
-\end{aligned}
-~
-This method is of course an approximation, but it in most cases it is sufficient because the uncertainty $\unc{x}$ should be small if $x$ is supposed to be a measurement (if it isn't, then our measurement isn't very good).
-There are known issues with this method, for example the uncertainty in $\sin(x)$ is zero if $\nom{x} = n\pi/2$ and it may not be possible to compute the derivatives of $f(x)$, but it is clearly the "standard" method.
 
-The other most common method for calculating $\unc{z}$ is based on Monte Carlo. Values for $x$ are drawn from its distribution and used to calculate multiple values of $z$ which are then used to calculate the average and standard
-deviation. While this method is more accurate (it works for arbitrary, non-linear functions), it is also more time consuming and may not be feasible.
+\begin{align*}
+  \nom{z} &= \ex{ f(x) } \approx f(\nom{x}), \\
+  \unc{z} &= \sqrt{ \ex{ (f(x) - \nom{z})^2 } } \approx \sqrt{ \ex{ \left( f^\prime(\nom{x}) (x - \nom{x}) \right)^2 } } = \sqrt{ (f^{\prime}(\nom{x}) \unc{x})^2 } = | f^{\prime}(\nom{x}) \unc{x} |.
+\end{align*}
+
+This method is of course an approximation, but it in most cases it is
+sufficient because the uncertainty $\unc{x}$ should be small if $x$ is supposed
+to be a measurement (if it isn't, then our measurement isn't very good).  There
+are known issues with this method. For example, the uncertainty in $\sin(x)$ is
+zero if $\nom{x} = n\pi/2$ and it may not be possible to compute the
+derivatives of $f(x)$, but it is certainly the ``standard'' method.
+
+The other most common method for calculating $\unc{z}$ is based on Monte Carlo.
+Values for $x$ are drawn from its distribution and used to calculate multiple
+values of $z$ which are then used to calculate the average and standard
+deviation. While this method is more accurate (it works for arbitrary,
+non-linear functions), it is also more time consuming and may not be feasible.
 
 Other methods for error propagation based on the Taylor Series expansion of the function $f$ exist (all you have to do is keep more terms), but they are much less common because they require higher moments of $x$ to be known, which
 is often not the case.
 
-If $f$ is a function of two variables, $x$ and $y$, then the Taylor Series expansion of the function truncated to first order can still be used and the nominal value for $z$ is a straight forward generalization of Equation [#1stodefs].
+If $f$ is a function of two variables, $x$ and $y$, then the Taylor Series expansion of the function truncated to first order can still be used and the nominal value for $z$ is a straight forward generalization of Equation \ref{eq:calc-nom}.
 However, since $\unc{z}$ is the expected value of $z - \nom{z}$ squared, it will contain cross terms of $x$ and $y$. The formulas are:
-~Equation {#1sto2ddefs;}
-\begin{aligned}
+\begin{align}
   \nom{z} &= \ex{ f(x,y) } \approx f(\nom{x},\nom{y}), \\
-  \unc{z} &= \sqrt{ \ex{ (f(x,y) - \nom{z})^2 } } \approx \sqrt{ (f^{\prime}_x(\nom{x},\nom{y}) \unc{x})^2 + (f^{\prime}_y(\nom{x},\nom{y}) \unc{y})^2 + 2f^{\prime}_{x}(\nom{x},\nom{y})f^{\prime}_{y}(\nom{x},\nom{y})\sigma_{x,y} }. \\
-\end{aligned}
-~
+  \unc{z} &= \sqrt{ \ex{ (f(x,y) - \nom{z})^2 } } \approx \sqrt{ (f^{\prime}_x(\nom{x},\nom{y}) \unc{x})^2 + (f^{\prime}_y(\nom{x},\nom{y}) \unc{y})^2 + 2f^{\prime}_{x}(\nom{x},\nom{y})f^{\prime}_{y}(\nom{x},\nom{y})\sigma_{x,y} }.
+  \label{eq:calc-unc}
+\end{align}
 where $f^\prime_x$ and $f^\prime_y$ indicate the partial derivatives of $f$. The $\sigma_{x,y}$ in the cross term is called covariance, and is defined as the expectation value of the product of the $x$ and $y$ deviations:
 $$
 \sigma_{x,y} = \ex{ (x-\nom{x})(y-\nom{y}) }.
 $$
-the *correlation* is defined as the covariance normalized to $\unc{x}\unc{y}$:
-~Equation {#correlation;}
+the \emph{correlation} is defined as the covariance normalized to $\unc{x}\unc{y}$:
+$$
+\label{correlation}
 r_{x,y} = \frac{ \ex{ (x-\nom{x})(y-\nom{y}) } }{\unc{x}\unc{y}}.
-~
-The two quantities, $x$ and $y$ are said to be *uncorrelated* if their deviations are independent of each other. In this case, positive and negative deviations in both $x$ and $y$ happen at random, and on average will all cancel
+$$
+The two quantities, $x$ and $y$ are said to be \emph{uncorrelated} if their deviations are independent of each other. In this case, positive and negative deviations in both $x$ and $y$ happen at random, and on average will all cancel
 such that $\sigma_{x,y}$ (and $r_{x,y}$) will be zero.
 
 
-# Numerical Method
+\section{Numerical Method}
+\label{sec-numrical-method}
 
-The method implemented by this module differs slightly from the first-order method. Rather than computing the derivatives of $f(x)$ at $\nom{x}$, we simply evaluate $f(x)$ at $\nom{x}$ and $\unc{x}$ and take the difference:
+The method implemented by this module differs slightly from the first-order method. Rather than computing the derivatives of $f(x)$ at $\nom{x}$, we simply evaluate $f(x)$ at $\nom{x}$ and $\nom{x} + \unc{x}$ and take the difference:
 $$
 \begin{aligned}
   \nom{z} &\approx f(\nom{x}), \\
@@ -113,7 +114,7 @@ $$
 \unc{z}_{y} &= f^{\prime}_y(\nom{x},\nom{y})\unc{y} =  f(\nom{x},\upp{y}) - f(\nom{x},\nom{y})
 \end{aligned}
 $$
-Then the total uncertainty $\unc{z}$ can be written as (from Equation [#1sto2ddefs]):
+Then the total uncertainty $\unc{z}$ can be written as (from Equation \ref{eq:calc-unc}):
 
 $$
 \begin{aligned}
@@ -122,18 +123,25 @@ $$
 $$
 If the correlation coefficient is negative, it is possible for the total uncertainty in $z$ to be zero.
 
-[^stddev]: The uncertainty in experimental measurements is commonly taken to be the standard error in the mean. Since standard error is the standard deviation of the sampling distribution, all of the calculations involving the standard deviation will also apply to standard error.
+
+\section{Correlations}
+\label{sec-correlations}
+
+When a calculation involves more than one uncertain quantity, then correlations
+between the quantities in the calculation must be considered. In simple
+experiments (like those performed in an undergraduate physics lab), the
+quantities measured in the experiment are not correlated and correlations
+involving the measurements can safely ignore correlation. \textbf{However}, if a
+series of calculations are performed with the measurements, then the results of
+these calculations \emphwill} be correlated, and additional calculations that
+involve the result *cannot* ignore correlation. Basically, if you have a set of
+uncorrelated measurements and you do not want to deal with correlation, then
+you must evaluate the uncertainty of all of your calculations directly from the
+uncertainty of the measurements. The following example illustrates this.
 
 
-# Correlations
-
-When a calculation involves more than one uncertain quantity, then correlations between the quantities in the calculation must be considered. In simple experiments (like those performed in an undergraduate physics lab), the
-quantities measured in the experiment are not correlated and correlations involving the measurements can safely ignore correlation. **However**, if a series of calculations are performed with the measurements, then the results
-of these calculations *will* be correlated, and additional calculations that involve the result *cannot* ignore correlation. Basically, if you have a set of uncorrelated measurements and you do not want to deal with correlation,
-then you must evaluate the uncertainty of all of your calculations directly from the uncertainty of the measurements. The following example illustrates this.
-
-
-## Determining the Correlation Coefficients
+\subsection{Determining the Correlation Coefficients}
+\label{sec-determining-the-correlation-coefficients}
 
 The correlation between two measurements can be directly calculated from Equation [#correlation], it is the average of the product of their deviations. However, if we perform a calculation that involves a measured quantity, then
 the result of the calculation will be correlated to the measurement and we must take this into account if other calculations involving the result are done.
@@ -186,9 +194,13 @@ $$
 So, the correlation between $z$ and the quantities it is calculated from depends on the correlation between the quantities themselves. If all quantities are uncorrelated, then
 $z$ will be correlated to each. However, if two or more quantities are correlated, then $z$ could be uncorrelated with them.
 
-The first term may appear to be different than the last two initially, but it can rewritten in the same form,
+The first term can be rewritten in the same form as the others,
 $$
-r_{z,x} = \frac{\unc{z}_x}{\unc{z}}r_{y,x} + \frac{\unc{z}_y}{\unc{z}}r_{y,x} + \frac{\unc{z}_w}{\unc{z}}r_{y,x}.
+r_{z,x} = \frac{\unc{z}_x}{\unc{z}}r_{x,x} + \frac{\unc{z}_y}{\unc{z}}r_{y,x} + \frac{\unc{z}_w}{\unc{z}}r_{w,x}.
+$$
+In general:
+$$
+r_{z,x_i} = \sum_j \frac{\unc{z}_x_j}{\unc{z}}r_{x_j,x}.
 $$
 In fact, this formula works for quantities that $z$ does not directly depend on. Let $z = f(x,y,w)$, and consider the correlation between $z$ and $v$,
 $$
@@ -209,7 +221,8 @@ $$
 It is possible for the uncertainty in $z$ to be zero if its inputs are correlated, which will cause the denominator to be zero. If this happens, then $z$ is
 uncorrelated with the inputs.
 
-# Summary
+\section{Summary}
+\label{sec-summary}
 
 In general, assume we have a calculation we need to perform that is a function of several uncertain quantities:
 $$
@@ -264,3 +277,4 @@ r_{z,w} &= \frac{\unc{z}_w}{\unc{z}} \\
 \end{aligned}
 $$
 
+\end{document}
