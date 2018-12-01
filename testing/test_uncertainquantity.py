@@ -198,6 +198,8 @@ def test_correlation():
   assert y.correlation(x) == 0.8
   assert x.correlation(z) == -0.8
   assert z.correlation(x) == -0.8
+  assert y.correlation(z) == 0
+  assert z.correlation(y) == 0
 
 def test_offset_units():
 

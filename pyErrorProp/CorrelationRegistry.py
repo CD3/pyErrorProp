@@ -6,7 +6,7 @@ wdict = WeakKeyDictionary
 class CorrelationRegistry(object):
   '''A registry that stores correlation coefficients between uncertain quantities. Coefficients
   are stored in a WeakKeyDictionary that is keyed using object instances. This allows the objects
-  to be garbage collected and their entires will be automatically removed from the registry.
+  to be garbage collected and their entries will be automatically removed from the registry.
   '''
 
   def __init__(self):
@@ -97,6 +97,7 @@ class CorrelationRegistry(object):
           s += ' '
         s += '\n'
       return s
+
 
 
 
