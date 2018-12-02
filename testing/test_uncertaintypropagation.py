@@ -11,7 +11,6 @@ UQ_ = uconv.UncertainQuantity
 Q_  = UQ_.Quantity
 
 
-@pytest.mark.skipif(sys.version_info > (2,7), reason="Correlation registry does not work in Python 3 yet.")
 def test_addition():
   nx = Q_(1.5,'m')
   dx = Q_(1,'cm')
@@ -23,8 +22,13 @@ def test_addition():
 
   # check that two uncertain quantities can be added
   z = x + y
-  assert Close( z.nominal, nx + ny, 0.001 )
+  assert Approx(nx + ny) == z.nominal
   assert Close( z.uncertainty, (dx**2 + dy**2)**0.5, 0.001 )
+  assert Approx(1/5**0.5) == z.correlation(x)
+  assert Approx(1/5**0.5) == x.correlation(z)
+  assert 0 == x.correlation(y)
+  assert Approx(2/5**0.5) == z.correlation(y)
+  assert Approx(2/5**0.5) == y.correlation(z)
 
   # check that a quantity can be added to an uncertain quantity
   z = x + ny
@@ -36,7 +40,6 @@ def test_addition():
   assert Close( z.nominal, nx + ny, 0.001 )
   assert Close( z.uncertainty, dy, 0.001 )
 
-@pytest.mark.skipif(sys.version_info > (2,7), reason="Correlation registry does not work in Python 3 yet.")
 def test_subtraction():
   nx = Q_(1.5,'m')
   dx = Q_(1,'cm')
@@ -61,7 +64,6 @@ def test_subtraction():
   assert Close( z.nominal, nx - ny, 0.001 )
   assert Close( z.uncertainty, dy, 0.001 )
 
-@pytest.mark.skipif(sys.version_info > (2,7), reason="Correlation registry does not work in Python 3 yet.")
 def test_multiplication():
   nx = Q_(1.5,'m')
   dx = Q_(1,'cm')
@@ -104,7 +106,6 @@ def test_multiplication():
   assert Close( z.nominal, 1.5*nx, 0.001 )
   assert Close( z.uncertainty, dx*1.5, 0.001 )
 
-@pytest.mark.skipif(sys.version_info > (2,7), reason="Correlation registry does not work in Python 3 yet.")
 def test_division():
   nx = Q_(1.5,'m')
   dx = Q_(1,'cm')
@@ -128,7 +129,7 @@ def test_division():
   assert Close( z.nominal, nz, 0.001 )
   assert Close( z.uncertainty, abs(dzx), 0.001 )
 
-  # check that a quantity can be subtracted from an uncertain quantity
+  # check that a quantity can be divided by an uncertain quantity
   z = nx / y
   assert Close( z.nominal, nz, 0.001 )
   assert Close( z.uncertainty, abs(dzy), 0.001 )
@@ -155,7 +156,6 @@ def test_division():
   assert Close( z.nominal, nx/1.5, 0.001 )
   assert Close( z.uncertainty, abs(dz), 0.001 )
 
-@pytest.mark.skipif(sys.version_info > (2,7), reason="Correlation registry does not work in Python 3 yet.")
 def test_sum():
   data = [ UQ_( 1, 0.1, 'm' )
          , UQ_( 2, 0.2, 'm' )
@@ -178,7 +178,6 @@ def test_sum():
   assert Close( x.nominal.magnitude    , 2 )
   assert Close( x.uncertainty.magnitude, (0.1**2 + 0.2**2 + 0.3**2)**0.5 )
 
-@pytest.mark.skipif(sys.version_info > (2,7), reason="Correlation registry does not work in Python 3 yet.")
 def test_neg():
   x = UQ_( '1.5 m +/- 1 cm' )
   y = 2*x
@@ -198,7 +197,6 @@ def test_neg():
   assert z.correlation(y) == -1
   assert y.correlation(z) == -1
 
-@pytest.mark.skipif(sys.version_info > (2,7), reason="Correlation registry does not work in Python 3 yet.")
 def test_abs():
   x = UQ_( '1.5 m +/- 1 cm' )
   y = 2*x
@@ -228,7 +226,6 @@ def test_abs():
   assert z.correlation(y) == -1
   assert y.correlation(z) == -1
   
-@pytest.mark.skipif(sys.version_info > (2,7), reason="Correlation registry does not work in Python 3 yet.")
 def test_correlation():
   x = UQ_( '2.5 +/- 0.5 m' )
   y = UQ_( '2.5 +/- 0.5 m' )
@@ -261,7 +258,6 @@ def test_correlation():
   assert z.nominal.magnitude == 0
   assert z.uncertainty.magnitude == 0
 
-@pytest.mark.skipif(sys.version_info > (2,7), reason="Correlation registry does not work in Python 3 yet.")
 def test_sum():
   nx = Q_(1.5,'m')
   dx = Q_(1,'cm')
@@ -287,7 +283,6 @@ def test_sum():
   assert Close( z.nominal.magnitude, 20, 1e-5 )
   assert Close( z.uncertainty.magnitude, 1, 0.001 )
 
-@pytest.mark.skipif(sys.version_info > (2,7), reason="Correlation registry does not work in Python 3 yet.")
 def test_power():
   x = UQ_( Q_(1.5,'m'), Q_(1,'cm') )
   y = UQ_( Q_(2.5,'m'), Q_(2,'cm') )

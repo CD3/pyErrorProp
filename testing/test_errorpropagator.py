@@ -5,6 +5,7 @@ from pyErrorProp import *
 import pytest
 from Utils import Close
 from inspect import signature 
+import sympy
 
 ureg = pint.UnitRegistry()
 Q_ = ureg.Quantity
@@ -67,8 +68,6 @@ def test_offset_units():
   pass
   # todo: test @WithError function that takes temperature as an argument.
   # todo: test @WithError function that takes temperature difference as an argument.
-  # todo: test @WithAutoError function that takes temperature as an argument.
-  # todo: test @WithAutoError function that takes temperature difference as an argument.
 
 
 
@@ -107,7 +106,6 @@ def test_doc_example_1():
     # print(Distance)
 
 
-@pytest.mark.skipif(True,reason="")
 def test_ballistic_pendulum():
 
   m,M,v0,v,h,g = sympy.symbols('m M v0 v h g')
@@ -117,7 +115,6 @@ def test_ballistic_pendulum():
 
   sol = sympy.solve( eqs, v0 )
 
-@pytest.mark.skipif(True,reason="")
 def test_airtrack_examples():
   angle    = UQ_( 2.14 , 0.05, 'degree' )
   distance = UQ_( 1.00 , 0.01 , 'm')
@@ -132,33 +129,11 @@ def test_airtrack_examples():
     g_ = sympy.lambdify( (th,x,t), sol[g], "numpy" )
     return g_(angle, distance, time)
 
-  ans = gravity(angle=angle,distance=distance,time=time)
+  ans,unc = gravity(angle=angle,distance=distance,time=time)
 
-  assert Close( nominal(ans), Q_(9.80,'m/s^2') )
-  assert Close( uncertainty(ans) , Q_(0.25,'m/s^2') )
+  assert Close( ans, Q_(9.80,'m/s^2') )
+  assert Close( unc , Q_(0.25,'m/s^2') )
 
-@pytest.mark.skipif(True,reason="")
-def test_auto_propagator():
-
-  Length = Q_(10,'m')
-  Width  = Q_(5,'m')
-
-  @WithAutoError()
-  def area( l, w ):
-    return l*w
-
-  Area = area( Length, Width )
-
-  A0 = Length*Width
-  A1 = Length*(Width+Q_(0.01,'m'))
-  A2 = (Length+Q_(0.1,'m'))*Width
-
-  U = numpy.sqrt( (A1-A0)**2 + (A2-A0)**2 )
-
-  assert Close( A0, nominal(Area), 0.01 )
-  assert Close(  U, uncertainty(Area), 0.01 )
-
-@pytest.mark.skipif(True,reason="")
 def test_multiple_funcs():
 
   def Area(l,w):
@@ -179,8 +154,7 @@ def test_multiple_funcs():
   dV3 = (2.0+0.0)*(3.0+0.0)*(4.0+0.4) - V
   dV = numpy.sqrt( dV1**2 + dV2**2 + dV3**2 )
 
-  Volume = Vol(Length,Width,Height)
-  print(Volume)
-  assert Close(  V,     nominal(Volume).magnitude, 0.001 )
-  assert Close( dV, uncertainty(Volume).magnitude, 0.001 )
+  Volume,VolumeUnc = Vol(Length,Width,Height)
+  assert Close(  V,     Volume.magnitude, 0.001 )
+  assert Close( dV,     VolumeUnc.magnitude, 0.001 )
 

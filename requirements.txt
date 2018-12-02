@@ -1,5 +1,2 @@
-mpmath==1.0.0
 numpy==1.15.4
 Pint==0.8.1
-pytest==4.0.0
-uncertainties==3.0.3

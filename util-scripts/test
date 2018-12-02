@@ -27,6 +27,6 @@ echo "Setting up virtual envirtonment to test"
 virtualenv -p python3 env
 source env/bin/activate
 source ${ROOTDIR}/util-scripts/install_dependencies.sh
+pip install sympy mpmath pytest uncertainties
 cd testing
-pytest
-
+pytest "$@"

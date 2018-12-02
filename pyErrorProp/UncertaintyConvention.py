@@ -292,6 +292,7 @@ def build_uncertainquantity_class(conv, ureg):
   UncertainQuantity.Quantity.__sub__ = disable_for_UQ( UncertainQuantity.Quantity.__sub__ )
   UncertainQuantity.Quantity.__mul__ = disable_for_UQ( UncertainQuantity.Quantity.__mul__ )
   UncertainQuantity.Quantity.__div__ = disable_for_UQ( UncertainQuantity.Quantity.__div__ )
+  UncertainQuantity.Quantity.__truediv__ = disable_for_UQ( UncertainQuantity.Quantity.__truediv__ )
 
 
   # automatically interpret string values as Decimals.

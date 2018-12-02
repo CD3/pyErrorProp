@@ -15,3 +15,6 @@ class Approx(object):
     return self
   def __eq__(self,other):
     return abs(other - self._val) <= self._epsilon*abs(other + self._val)/2
+  def __repr__(self):
+    return "{} +/- {}%".format(self._val,self._epsilon*100)
+
