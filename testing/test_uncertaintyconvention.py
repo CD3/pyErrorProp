@@ -111,3 +111,26 @@ def test_rounding():
   assert str(y) == "<UncertainQuantity(123, 0.032, meter)>"
   assert type(y.nominal.magnitude) == nomt
   assert type(y.error.magnitude) == unct
+
+def test_exact_inputs():
+
+  L = Q_(2,'m')
+  W = Q_(4,'m')
+
+  @uconv.WithError
+  def area(l,w):
+    return l*w
+
+  A = area(L,W)
+
+  assert Approx(8) == A.nominal.magnitude
+  assert A.uncertainty.magnitude < 1e-20
+
+
+  L = UQ_(2,0,'m')
+  W = UQ_(4,0,'m')
+
+  A = area(L,W)
+
+  assert Approx(8) == A.nominal.magnitude
+  assert A.uncertainty.magnitude < 1e-20
