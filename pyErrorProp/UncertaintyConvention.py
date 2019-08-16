@@ -49,7 +49,25 @@ class UncertaintyConvention(object):
     for dzx,x in dzs:
       for dzy,y in dzs:
         dz += creg.correlation(x,y) * dzx * dzy
-    dz = dz**0.5
+    try:
+      dz = dz**0.5
+    except TypeError:
+      # WORKAROUND
+      # decimal.Decimal types cannot be raised to a float power
+      try:
+        dz = dz**decimal.Decimal('0.5')
+      except TypeError:
+        # WORKAROUND
+        # Pint quantities that use decimal.Decimal underneith can't be raised to a fractional power
+        # (https://github.com/hgrecco/pint/issues/794)
+        try:
+          val = dz.magnitude**decimal.Decimal('0.5')
+          unit = dz.units**0.5
+          dz = type(dz)(val,unit)
+
+        except TypeError:
+          raise TypeError(f"Could not take the square root of dz (type: {type(dz)}) to compute total uncertainty. The underlying type used for the input quantities are probably not supported by Pint.")
+      
 
     z = self.UncertainQuantity(zbar,dz)
 
@@ -61,7 +79,10 @@ class UncertaintyConvention(object):
       r = 0.0
       for dzy,y in dzs:
         try:
-          r += (dzy / dz) * creg.correlation( x, y )
+          # WORKAROUND
+          # always store correlations as float, even if inputs parameters
+          # are decimal.Decimal.
+          r += float(dzy / dz) * creg.correlation( x, y )
         except ZeroDivisionError:
           # if dz is zero, then z is not correlated to anything
           break
@@ -71,7 +92,7 @@ class UncertaintyConvention(object):
         r = 0.0
         for dzy,y in dzs:
           try:
-            r += (dzy / dz) * creg.correlation( v, y )
+            r += float(dzy / dz) * creg.correlation( v, y )
           except ZeroDivisionError:
             # if dz is zero, then z is not correlated to anything
             break
@@ -199,7 +220,28 @@ class UncertaintyConvention(object):
         for dzx,x in dzs:
           for dzy,y in dzs:
             dz += creg.correlation(x,y) * dzx * dzy
-        dz = dz**0.5
+        try:
+          dz = dz**0.5
+        except TypeError:
+          # WORKAROUND
+          # decimal.Decimal types cannot be raised to a float power
+          try:
+            dz = dz**decimal.Decimal('0.5')
+          except TypeError:
+            # WORKAROUND
+            # Pint quantities that use decimal.Decimal underneith can't be raised to a fractional power
+            # (https://github.com/hgrecco/pint/issues/794)
+            try:
+              val = dz.magnitude**decimal.Decimal('0.5')
+              unit = dz.units**0.5
+              dz = type(dz)(val,unit)
+
+            except TypeError:
+              raise TypeError(f"Could not take the square root of dz (type: {type(dz)}) to compute total uncertainty. The underlying type used for the input quantities are probably not supported by Pint.")
+
+
+
+
 
         z = self.UncertainQuantity(zbar,dz)
 
@@ -219,7 +261,8 @@ class UncertaintyConvention(object):
     # get sigfig decimal postion
     pos = get_sigfig_decimal_pos( magof(nom), sigfigs )
     # the uncertainty is the last significant figure plus-or-minus 1
-    unc = self.UncertainQuantity.Quantity(pow(10,-pos),unitsof(nom))
+    # need to make sure we cast the value type to match the nominal value passed in
+    unc = self.UncertainQuantity.Quantity( type(nom.magnitude)(pow(10,-pos)),unitsof(nom))
 
     return self.UncertainQuantity(val, unc)
 

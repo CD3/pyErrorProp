@@ -430,15 +430,28 @@ def test_error_propagation_with_decimal_types():
     return x*y
 
 
-  # This will give an error because we can't raise a Decimal to a float power.
-  # A = area1(L,W)
+  A = area1(L,W)
+  assert isinstance(A.nominal.magnitude,decimal.Decimal)
+  assert str(A.nominal.magnitude) == '2.64'
+  assert str(A.uncertainty.magnitude).startswith('0.3255764')
+  A.normalize(1)
+  assert str(A.nominal.magnitude) == '2.6'
+  assert str(A.uncertainty.magnitude) == '0.3'
 
-  # we also can't do this, because decimal is a built-in type
-  # old_pow = decimal.Decimal.__pow__
-  # def new_pow(self,other):
-  #   return old_pow(self,decimal.Decimal(other))
-  # decimal.Decimal.__pow__ = new_pow
-    
+
+  @uconv.WithAutoError()
+  def area2(x,y):
+    return x*y
+
+
+  A = area2(L.nominal,W.nominal)
+  assert isinstance(A.nominal.magnitude,decimal.Decimal)
+  assert str(A.nominal.magnitude) == '2.6400'
+  assert str(A.uncertainty.magnitude).startswith('0.0250599')
+  A.normalize(1)
+  assert str(A.nominal.magnitude) == '2.64'
+  assert str(A.uncertainty.magnitude) == '0.03'
+
 
 
 def test_error_propagation_with_mpf():
