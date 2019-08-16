@@ -309,6 +309,8 @@ def test_power():
 
 
 
+  
+
 
 def test_uncconv_decorator_signatures():
 
@@ -396,5 +398,68 @@ def test_temperature_error_propatation():
 
   E = energy( 1, Q_(1,'mol'), Q_(1,'J/mol/degC'), Q_(212,'degF') )
   assert Close( E.nominal.magnitude    , 373/2 )
+
+def test_autoerrorprop_with_unitless_types():
+  x = 10
+  y = 20
+
+  @uconv.WithError
+  def area1(x,y):
+    return x*y
+
+  a1 = area1(x,y)
+
+  @uconv.WithAutoError()
+  def area2(x,y):
+    return x*y
+
+  a2 = area2(x,y)
+
+  assert Close(a1.nominal,200)
+  assert Close(a2.nominal,200)
+
+
+def test_error_propagation_with_decimal_types():
+
+  L = UQ_( '1.2', '0.1', 'cm')
+  W = UQ_( '2.2', '0.2', 'cm')
+
+
+  @uconv.WithError
+  def area1(x,y):
+    return x*y
+
+
+  # This will give an error because we can't raise a Decimal to a float power.
+  # A = area1(L,W)
+
+  # we also can't do this, because decimal is a built-in type
+  # old_pow = decimal.Decimal.__pow__
+  # def new_pow(self,other):
+  #   return old_pow(self,decimal.Decimal(other))
+  # decimal.Decimal.__pow__ = new_pow
+    
+
+
+def test_error_propagation_with_mpf():
+
+  import mpmath as mp
+  L = UQ_( mp.mpf('1.2'), mp.mpf('0.1'), 'cm')
+  W = UQ_( mp.mpf('2.2'), mp.mpf('0.2'), 'cm')
+
+
+  @uconv.WithError
+  def area1(x,y):
+    return x*y
+
+
+  A = area1(L,W)
+
+  assert str(A.nominal.magnitude) == '2.64'
+
+
+
+
+
 
 
