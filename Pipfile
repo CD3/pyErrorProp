@@ -1,0 +1,16 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+numpy = "==1.15.4"
+Pint = "==0.8.1"
+pytest = "*"
+sympy = "*"
+uncertainties = "*"
+
+[requires]
+python_version = "3.6"
