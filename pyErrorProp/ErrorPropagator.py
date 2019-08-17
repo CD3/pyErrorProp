@@ -85,13 +85,13 @@ class ErrorPropagator(object):
 
 
   def __call__(self, *args, **kargs):
-    return self.propagate_uncertainties(self.func, *args, **kargs)
+    return self.propagate_errors(self.func, *args, **kargs)
 
-  def propagate_uncertainties(self, func, *args, **kargs):
+  def propagate_errors(self, func, *args, **kargs):
     '''Propagates error through a function returning the nominal value, total uncertainty (ignoring correlation)
-       and (optionally) each uncertainty component. If correlations are needed, call __propagate_uncertainties__
+       and (optionally) each uncertainty component. If correlations are needed, call __propagate_errors__
        instead and use the total_uncertainty method to calculate the total uncertainty with correlation.'''
-    nominal_value, uncertainties = self.__propagate_uncertainties__( func, *args, **kargs )
+    nominal_value, uncertainties = self.__propagate_errors__( func, *args, **kargs )
     uncertainty = self.total_uncertainty( list(uncertainties.values()) )
 
     if self.return_all_uncertainties:
@@ -107,7 +107,7 @@ class PositiveIntervalPropagator( ErrorPropagator ):
   def __init__(self, *args, **kargs):
     super( PositiveIntervalPropagator, self ).__init__( *args, **kargs )
 
-  def __propagate_uncertainties__(self, func, *args, **kargs):
+  def __propagate_errors__(self, func, *args, **kargs):
     # get nominal values for each argument
     nominal_args = []
     for i,a in enumerate(args):

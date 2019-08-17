@@ -19,6 +19,27 @@ def test_from_data():
   assert Close( x.nominal.magnitude    , 2 )
   assert Close( x.uncertainty.magnitude, numpy.std( numpy.array([1,2,3]), ddof=1 )/(3.**0.5) )
 
+def test_from_data_with_decimal():
+  data = [ Q_( '1', 'm' )
+         , Q_( '2', 'm' )
+         , Q_( '3', 'm' )
+         ]
+
+  x = uconv.calc_UncertainQuantity( data )
+
+  assert str(x.nominal.magnitude) == '2'
+  assert str(x.uncertainty.magnitude).startswith( '0.577350269' )
+
+  x.normalize(2)
+
+  assert str(x.nominal.magnitude) == '2.00'
+  assert str(x.uncertainty.magnitude) ==  '0.58' 
+
+  x.normalize(1)
+
+  assert str(x.nominal.magnitude) == '2.0'
+  assert str(x.uncertainty.magnitude) ==  '0.6' 
+
 
 def test_ep_decorator():
 

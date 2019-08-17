@@ -98,5 +98,37 @@ def unitsof(q):
   except:
     return ""
 
+def get_quantity_compatible_type(x):
+  if hasattr(x,'magnitude'):
+    return type(x.magnitude)
+
+  return type(x)
+
+def special_square_root(x):
+  '''Compute the square root of a quantity or value, taking
+  care with types. For example, a decimal.Decimal cannot be raised
+  to the 0.5 power, because 0.5 is a float. But we can't just cast
+  0.5 to a Decimal, because pint quantities will use a float for compuring
+  powers of the units, and we cant raise a float to a Decimal power.'''
+
+  # handl special cases, and then just try the default.
+
+  if isinstance(x,decimal.Decimal):
+    return x**decimal.Decimal('0.5')
+
+  if hasattr(x,'magnitude') and isinstance(x.magnitude,decimal.Decimal):
+    # WORKAROUND
+    # Pint quantities that use decimal.Decimal underneith can't be raised to a fractional power
+    # (https://github.com/hgrecco/pint/issues/794)
+    val = x.magnitude**decimal.Decimal('0.5')
+    unit = x.units**0.5
+    return type(x)(val,unit)
+
+  try:
+    return x**0.5
+  except TypeError:
+    raise TypeError(f"Could not take the square root of {str(x)} (type: {type(x)}) to compute total uncertainty. The underlying type used for the input quantities are probably not supported by Pint.")
+
+
 
 

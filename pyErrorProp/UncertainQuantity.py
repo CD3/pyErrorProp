@@ -277,47 +277,47 @@ class _UncertainQuantity(object):
     self._unit = self._nom.units
 
   def __neg__(self):
-    return self._CONVENTION.__propagate_error__( operator.__sub__, (0,self) )
+    return self._CONVENTION.__propagate_errors__( operator.__sub__, (0,self) )
 
   def __abs__(self):
     if self.nominal.magnitude >= 0:
-      return self._CONVENTION.__propagate_error__( operator.__add__, (0,self) )
+      return self._CONVENTION.__propagate_errors__( operator.__add__, (0,self) )
     else:
-      return self._CONVENTION.__propagate_error__( operator.__sub__, (0,self) )
+      return self._CONVENTION.__propagate_errors__( operator.__sub__, (0,self) )
 
   def __add__(self,other):
-    return self._CONVENTION.__propagate_error__( operator.__add__, (self,other) )
+    return self._CONVENTION.__propagate_errors__( operator.__add__, (self,other) )
 
   __radd__ = __add__
 
   def __sub__(self,other):
-    return self._CONVENTION.__propagate_error__( operator.__sub__, (self,other) )
+    return self._CONVENTION.__propagate_errors__( operator.__sub__, (self,other) )
 
   def __rsub__(self,other):
-    return self._CONVENTION.__propagate_error__( operator.__sub__, (other,self) )
+    return self._CONVENTION.__propagate_errors__( operator.__sub__, (other,self) )
     return -self.__sub__(other)
 
   def __mul__(self,other):
-    return self._CONVENTION.__propagate_error__( operator.__mul__, (self,other) )
+    return self._CONVENTION.__propagate_errors__( operator.__mul__, (self,other) )
 
   def __rmul__(self,other):
-    return self._CONVENTION.__propagate_error__( operator.__mul__, (other,self) )
+    return self._CONVENTION.__propagate_errors__( operator.__mul__, (other,self) )
 
   def __truediv__(self,other):
-    return self._CONVENTION.__propagate_error__( operator.__truediv__, (self,other) )
+    return self._CONVENTION.__propagate_errors__( operator.__truediv__, (self,other) )
 
   def __rtruediv__(self,other):
-    return self._CONVENTION.__propagate_error__( operator.__truediv__, (other,self) )
+    return self._CONVENTION.__propagate_errors__( operator.__truediv__, (other,self) )
 
   def __div__(self,other):
-    return self._CONVENTION.__propagate_error__( operator.__div__, (self,other) )
+    return self._CONVENTION.__propagate_errors__( operator.__div__, (self,other) )
 
   def __rdiv__(self,other):
-    return self._CONVENTION.__propagate_error__( operator.__div__, (other,self) )
+    return self._CONVENTION.__propagate_errors__( operator.__div__, (other,self) )
 
 
   def __pow__(self,other):
-    return self._CONVENTION.__propagate_error__( operator.__pow__, (self,other) )
+    return self._CONVENTION.__propagate_errors__( operator.__pow__, (self,other) )
 
 
 

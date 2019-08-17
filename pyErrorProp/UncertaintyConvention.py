@@ -33,10 +33,10 @@ class UncertaintyConvention(object):
     except:
       return 1e10
 
-  def __propagate_error__(self, f, args, kwargs = {}):
+  def __propagate_errors__(self, f, args, kwargs = {}):
     '''Propagates error through a function.'''
     # assume we are calculating z = f(x,y,...)
-    zbar,dzs= self.ErrorPropagator.__propagate_uncertainties__( f, *args, **kwargs )
+    zbar,dzs= self.ErrorPropagator.__propagate_errors__( f, *args, **kwargs )
 
     # dzs is a dict of the uncertainty contributions from args and kwargs.
     # it will be more convienient to have a list of quantities paired with their uncertainty...
@@ -49,25 +49,7 @@ class UncertaintyConvention(object):
     for dzx,x in dzs:
       for dzy,y in dzs:
         dz += creg.correlation(x,y) * dzx * dzy
-    try:
-      dz = dz**0.5
-    except TypeError:
-      # WORKAROUND
-      # decimal.Decimal types cannot be raised to a float power
-      try:
-        dz = dz**decimal.Decimal('0.5')
-      except TypeError:
-        # WORKAROUND
-        # Pint quantities that use decimal.Decimal underneith can't be raised to a fractional power
-        # (https://github.com/hgrecco/pint/issues/794)
-        try:
-          val = dz.magnitude**decimal.Decimal('0.5')
-          unit = dz.units**0.5
-          dz = type(dz)(val,unit)
-
-        except TypeError:
-          raise TypeError(f"Could not take the square root of dz (type: {type(dz)}) to compute total uncertainty. The underlying type used for the input quantities are probably not supported by Pint.")
-      
+    dz = special_square_root(dz)
 
     z = self.UncertainQuantity(zbar,dz)
 
@@ -183,8 +165,9 @@ class UncertaintyConvention(object):
   def calc_UncertainQuantity( self, data, round = False ):
     '''Computes an uncertain quantity from a data set (computes the standard error)'''
     nominal = sum( data ) / len(data)
-    std_dev = ( sum( [ (x - nominal)**2 for x in data ] ) / (len(data)-1) )**0.5 # Note: using the 'unbiased' estimate
-    std_err = std_dev /len( data )**0.5
+    variance = ( sum( [ (x - nominal)**2 for x in data ] ) / (len(data)-1) ) # Note: using the 'unbiased' estimate
+    std_dev = special_square_root(variance)
+    std_err = std_dev / get_quantity_compatible_type(std_dev)(len( data )**0.5)
 
     q = self.UncertainQuantity( nominal, std_err )
     if round:
@@ -197,7 +180,7 @@ class UncertaintyConvention(object):
   def WithError(self,func):
 
     def wrapper(f,*args,**kwargs):
-      return self.__propagate_error__( f, args, kwargs )
+      return self.__propagate_errors__( f, args, kwargs )
 
     return decorate(func,wrapper)
 
@@ -211,7 +194,7 @@ class UncertaintyConvention(object):
 
       def wrapper(f,*args,**kwargs):
         propagator = AutoErrorPropagator(self,sigfigs)
-        zbar,dzs = propagator.__propagate_uncertainties__(f,*args,**kwargs)
+        zbar,dzs = propagator.__propagate_errors__(f,*args,**kwargs)
         dzs = [ ( dzs[k], kwargs[k] if k in kwargs else args[k] ) for k in dzs ]
         creg = self._CORRREGISTRY
 
@@ -220,28 +203,7 @@ class UncertaintyConvention(object):
         for dzx,x in dzs:
           for dzy,y in dzs:
             dz += creg.correlation(x,y) * dzx * dzy
-        try:
-          dz = dz**0.5
-        except TypeError:
-          # WORKAROUND
-          # decimal.Decimal types cannot be raised to a float power
-          try:
-            dz = dz**decimal.Decimal('0.5')
-          except TypeError:
-            # WORKAROUND
-            # Pint quantities that use decimal.Decimal underneith can't be raised to a fractional power
-            # (https://github.com/hgrecco/pint/issues/794)
-            try:
-              val = dz.magnitude**decimal.Decimal('0.5')
-              unit = dz.units**0.5
-              dz = type(dz)(val,unit)
-
-            except TypeError:
-              raise TypeError(f"Could not take the square root of dz (type: {type(dz)}) to compute total uncertainty. The underlying type used for the input quantities are probably not supported by Pint.")
-
-
-
-
+        dz = special_square_root(dz)
 
         z = self.UncertainQuantity(zbar,dz)
 
@@ -255,6 +217,18 @@ class UncertaintyConvention(object):
     '''Create and return uncertain quantity from a quantity and number of sigfigs. The
     uncertain quantity will have an error that corresponds to the last
     significant figure plus or minus 1.'''
+
+    # need to determine the type for the uncertainty value.
+    # uncertainty value type should match the nominal value type,
+    # unless it is an int. If nominal type is an int, it is
+    # possible for the uncertainty to be a decimal.
+    # i.e. 2 +/- 0.1
+    try: unc_type = type(nom.magnitude)
+    except: unc_type = type(nom)
+    if unc_type is int:
+      unc_type = float
+
+
     nom = nominal( nom )
     # round to correct number of sigfigs
     val = sigfig_round( nom, sigfigs )
@@ -262,7 +236,7 @@ class UncertaintyConvention(object):
     pos = get_sigfig_decimal_pos( magof(nom), sigfigs )
     # the uncertainty is the last significant figure plus-or-minus 1
     # need to make sure we cast the value type to match the nominal value passed in
-    unc = self.UncertainQuantity.Quantity( type(nom.magnitude)(pow(10,-pos)),unitsof(nom))
+    unc = self.UncertainQuantity.Quantity( unc_type(pow(10,-pos)),unitsof(nom))
 
     return self.UncertainQuantity(val, unc)
 
@@ -285,7 +259,7 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
     self.sigfigs = sigfigs
     super( AutoErrorPropagator, self ).__init__( *args, **kargs )
 
-  def __propagate_uncertainties__(self, func, *args, **kargs):
+  def __propagate_errors__(self, func, *args, **kargs):
     new_args = []
     for i,a in enumerate(args):
       if not a.__class__.__name__ == 'UncertainQuantity':
@@ -298,7 +272,7 @@ class AutoErrorPropagator( PositiveIntervalPropagator ):
         v = self.uconv.make_sigfig_UQ( v, self.sigfigs )
       new_kargs[k] = v
 
-    value,uncertainties = super( AutoErrorPropagator, self).__propagate_uncertainties__( func, *new_args, **new_kargs )
+    value,uncertainties = super( AutoErrorPropagator, self).__propagate_errors__( func, *new_args, **new_kargs )
 
     return value, uncertainties
 
