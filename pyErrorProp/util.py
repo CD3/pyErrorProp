@@ -96,7 +96,7 @@ def unitsof(q):
   try:
     return q.units
   except:
-    return ""
+    return None
 
 def get_quantity_compatible_type(x):
   if hasattr(x,'magnitude'):
