@@ -2,7 +2,6 @@ import os
 from setuptools import setup, find_packages
 
 DESCRIPTION = "Error propgation calculations with uncertian quantities."
-LONG_DESCRIPTION = open('README.md').read()
 VERSION = '3.1.2'
 
 setup(
@@ -11,7 +10,6 @@ setup(
   version = VERSION,
   license='MIT',
   description = DESCRIPTION,
-  long_description = LONG_DESCRIPTION,
   author = 'CD Clark III',
   author_email = 'clifton.clark@gmail.com',
   url = 'https://github.com/CD3/pyErrorProp',
