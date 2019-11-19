@@ -159,8 +159,8 @@ def test_exact_inputs():
 
 def test_z_value_calculations():
 
-  assert str(uconv.z( Q_(10.0,'cm'), UQ_(9.0,0.5,'m') ) ).startswith('2.0')
-  assert str(uconv.z( Q_('10.0','cm'), UQ_('9.0','0.5','cm') ) ).startswith('2.0')
+  assert str(uconv.z( Q_(10.0,'cm'), UQ_(9.0,0.5,'cm') ) ).startswith('2.0')
+  assert str(uconv.z( Q_('10.0','cm'), UQ_('9.0','0.5','cm') ) ).startswith('2')
 
 
 

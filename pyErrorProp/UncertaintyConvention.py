@@ -28,7 +28,11 @@ class UncertaintyConvention(object):
     return self._CORRREGISTRY
 
   def z(self,a,b):
-    return ( nominal(a) - nominal(b) ) / special_square_root(uncertainty(a)**2 + uncertainty(b)**2)
+    z = ( nominal(a) - nominal(b) ) / special_square_root(uncertainty(a)**2 + uncertainty(b)**2)
+    try:
+      return z.to("")
+    except:
+      return z
 
   def __propagate_errors__(self, f, args, kwargs = {}):
     '''Propagates error through a function.'''
