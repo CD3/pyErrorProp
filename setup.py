@@ -17,6 +17,7 @@ setup(
   url = 'https://github.com/CD3/pyErrorProp',
   download_url = f'https://github.com/CD3/pyErrorProp/archive/{VERSION}.tar.gz',
   keywords = ['physics', 'uncertainty', 'units'],
+  install_requires = ['pint'],
   classifiers=[
     'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
