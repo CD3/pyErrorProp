@@ -88,6 +88,13 @@ consistent: True
 
 ## Installing
 
+`pyErrorProp` releases can be installed from PyPi.
+
+```
+$ pip install pyErrorProp
+```
+
+You can also install the latest development version from the git repository.
 `pyErrorProp` provides a `distutils` setup script. To install, just run the `setup.py` script.
 
 ```
