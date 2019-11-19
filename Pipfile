@@ -11,6 +11,7 @@ sympy = "*"
 uncertainties = "*"
 jedi = "*"
 mpmath = "*"
+twine = "*"
 
 [packages]
 
