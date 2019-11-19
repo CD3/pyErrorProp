@@ -1,18 +1,27 @@
-#!/usr/bin/env python
-
 import os
 from setuptools import setup, find_packages
 
 DESCRIPTION = "Error propgation calculations with uncertian quantities."
 LONG_DESCRIPTION = open('README.md').read()
 
-setup(name='pyErrorProp',
-      version='3.0.0',
-      description=DESCRIPTION,
-      long_description=LONG_DESCRIPTION,
-      author='C.D. Clark III',
-      url='https://github.com/CD3/pyErrorProp',
-      license="MIT License",
-      platforms=["any"],
-      packages=['pyErrorProp']
-     )
+setup(
+  name = 'pyErrorProp',
+  packages = ['pyErrorProp'],
+  version = '3.1.1',
+  license='MIT',
+  description = DESCRIPTION,
+  long_description = LONG_DESCRIPTION,
+  author = 'CD Clark III',
+  author_email = 'clifton.clark@gmail.com',
+  url = 'https://github.com/CD3/pyErrorProp',
+  download_url = 'https://github.com/CD3/pyErrorProp/archive/3.1.1.tar.gz',
+  keywords = ['physics', 'uncertainty', 'units'],
+  classifiers=[
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Developers',
+    'Topic :: Software Development :: Build Tools',
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.6',
+  ],
+)
